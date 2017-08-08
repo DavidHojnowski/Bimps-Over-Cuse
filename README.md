@@ -1,3 +1,3 @@
 # Bimps-Over-Cuse
 Repository containing the code for our senior design project.
-<strong>Dank Memes</strong>
+<br><strong><font size="30">Dank Memes</font></strong><br>
