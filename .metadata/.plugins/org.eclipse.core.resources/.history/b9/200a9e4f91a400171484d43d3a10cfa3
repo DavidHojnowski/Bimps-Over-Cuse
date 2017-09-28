@@ -1,0 +1,23 @@
+import javax.swing.JFrame;
+
+public class MyFrame extends JFrame {
+	
+	
+	public MyFrame(String title){
+		super(title);
+	}
+	
+	private void drawGUI(){
+		//create and setup window
+		MyFrame frame = new MyFrame("TestFrame");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		//set up content pane
+		//may or may not need this
+		
+		//dispaly the window
+		frame.pack();
+		frame.setVisible(true);
+	}
+
+}

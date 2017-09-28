@@ -1,4 +1,10 @@
 
 public class View {
-
+	private MyFrame test; //this is gunna be the frame or the window that we draw in
+	
+	public View(){
+		test = new MyFrame();
+	
+	}
+	
 }
