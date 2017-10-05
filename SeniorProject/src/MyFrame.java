@@ -1,24 +1,20 @@
+
 import javax.swing.JFrame;
 
-public class MyFrame  {
+public class MyFrame extends JFrame{
+	//my frame extends JFrame so that we can use it's methods, and have our own unique JFrame
+	//Mainly to give it our custom key listener
 	JFrame frame;
 	
-	public MyFrame(){
-
-		drawGUI();
+	public MyFrame(Controller c){
+		//can call all three of these methods without issue becase we extend JFrame
+		addKeyListener(c); //this tells us that the key events will be picked up in the INputKeyListener class
+		setFocusable(true);
+		setFocusTraversalKeysEnabled(false);
+	
 	}
 	
-	private void drawGUI(){
-		//create and setup window
-		frame = new JFrame("TestFrame");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		//set up content pane
-		
-		//dispaly the window
-	//	frame.pack(); use pack to make the frame fit the component size
-		frame.setSize(500,500);
-		frame.setVisible(true);
-	}
+
+
 
 }

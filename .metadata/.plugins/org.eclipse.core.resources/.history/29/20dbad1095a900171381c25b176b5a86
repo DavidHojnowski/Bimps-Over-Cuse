@@ -1,0 +1,29 @@
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class InputKeyListener implements KeyListener {
+//we implemnt keylistener here so that we can get the key events
+
+	@Override
+	public void keyPressed(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("Key Pressed");
+		//When key pressed and key released happen also need to somehow make things happen in the controller
+		
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("Key Released");
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("Key Typed");
+		
+	}
+
+}

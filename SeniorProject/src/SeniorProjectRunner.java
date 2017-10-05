@@ -5,7 +5,6 @@ public class SeniorProjectRunner {
 		// TODO Auto-generated method stub
 		
 		Controller control = new Controller();
-		control.begin();
 		
 
 	}

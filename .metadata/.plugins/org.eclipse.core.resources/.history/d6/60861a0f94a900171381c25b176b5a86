@@ -1,0 +1,24 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JFrame;
+
+public class MyFrame extends JFrame{
+	//my frame extends JFrame so that we can use it's methods, and have our own unique JFrame
+	//Had to implement it this way for the KeyListeners to work
+	JFrame frame;
+	
+	public MyFrame(InputKeyListener listen){
+		//can call all three of these methods without issue becase we extend JFrame
+		addKeyListener(listen); //this tells us that the key events will be picked up in the INputKeyListener class
+		setFocusable(true);
+		setFocusTraversalKeysEnabled(false);
+	
+	}
+	
+
+
+
+}

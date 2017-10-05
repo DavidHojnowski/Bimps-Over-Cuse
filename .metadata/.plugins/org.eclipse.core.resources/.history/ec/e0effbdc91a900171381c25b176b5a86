@@ -1,0 +1,39 @@
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+import javax.swing.JFrame;
+
+public class MyFrame extends JFrame implements KeyListener {
+	//my frame extends JFrame so that we can use it's methods, and have our own unique JFrame
+	//Had to implement it this way for the KeyListeners to work
+	JFrame frame;
+	
+	public MyFrame(){
+		//can call all three of these methods without issue becase we extend JFrame
+		addKeyListener(this);
+		setFocusable(true);
+		setFocusTraversalKeysEnabled(false);
+	}
+	
+
+	@Override
+	public void keyPressed(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("Key Pressed");
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("Key Released");
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("Key Typed");
+		
+	}
+
+}
