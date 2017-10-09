@@ -65,6 +65,7 @@ public class Car {
 	public void goLeft(){
 		right = false;//we want to make sure right is false when left is true
 		left = true;
+		updateMoving();
 	}
 	
 	//call this method when we no longer are heading left
@@ -74,10 +75,60 @@ public class Car {
 		updateMoving();
 	}
 	
+	//want to know if were heading left, if going left then retunrs true else false
+	public boolean goingLeft(){
+		return left;
+	}
+	
 	//When this method is called the car is going right
 	public void goRight(){
 		left = false;//can not begoing both left and right at the same time
 		right = true;
+		updateMoving();
+	}
+	
+	public void stopRight(){
+		right = false;
+		updateMoving();
+	}
+	
+	public boolean goingRight(){
+		return right;
+	}
+	
+	public void goFwd(){
+		bckwd = false;
+		fwd = true;
+		updateMoving();
+	}
+	
+	public void stopFwd(){
+		fwd = false;
+		updateMoving();
+	}
+	
+	
+	public boolean goingFwd(){
+		return fwd;
+	}
+	
+	public void goBckwd(){
+		fwd = false;
+		bckwd = true;
+		updateMoving();
+	}
+	
+	public void stopBckwd(){
+		bckwd = false;
+		updateMoving();
+	}
+	
+	public boolean goingBckWd(){
+		return bckwd;
+	}
+	
+	public boolean getMoving(){
+		return moving;
 	}
 	
 	

@@ -1,0 +1,21 @@
+
+public class CarController {
+	Model carModel;
+	
+	public CarController(Model carModel){
+		this.carModel = carModel;
+	}
+	
+	public void keyPressed(Keys key){
+		switch(key){
+			case UPARROW:
+				break;
+			case DOWNARROW:
+				break;
+			case LEFTARROW:
+				break;
+			case RIGHTARROW:
+				break;
+		}
+	}
+}

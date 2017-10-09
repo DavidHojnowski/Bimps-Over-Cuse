@@ -1,0 +1,49 @@
+
+public class CarController {
+	Model carModel;
+	
+	public CarController(Model carModel){
+		this.carModel = carModel;
+	}
+	
+	public void keyPressed(Keys key){
+		switch(key){
+			case UPARROW:
+				carModel.goFwd();
+				break;
+			case DOWNARROW:
+				carModel.goBckWd();
+				break;
+			case LEFTARROW:
+				carModel.goLeft();
+				break;
+			case RIGHTARROW:
+				carModel.goRight();
+				break;
+		}		
+		sendCommand();
+	}
+	
+	public void keyReleased(Keys key){
+		switch(key){
+			case UPARROW:
+				carModel.stopFwd();
+				break;
+			case DOWNARROW:
+				carModel.stopBckWd();
+				break;
+			case LEFTARROW:
+				carModel.stopLeft();
+				break;
+			case RIGHTARROW:
+				carModel.stopRight();
+				break;
+		}
+		sendCommand();
+	}
+	
+	private void sendCommand(){
+		
+	}
+}
+
