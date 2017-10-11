@@ -1,0 +1,18 @@
+
+public class Controller {
+
+	View view;
+	Model model;
+	InputKeyListener input;
+	
+	public Controller(){
+	    input = new InputKeyListener();
+		view = new View(input);
+		model = new Model();
+
+	}
+	
+	public void begin(){
+		
+	}
+}

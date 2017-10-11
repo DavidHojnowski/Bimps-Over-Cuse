@@ -1,12 +1,15 @@
 #include <SoftwareSerial.h>
+#include <Servo.h>
 
 
 
 
-  //PinNumDefinitions:
+  //PinNum&GlobalVariableDefinitions:
   //---------------HC-SR04---------------//
   const int trigPin = 22;
   const int echoPin = 24;
+  long duration;
+  int distance;
   //---------------GPS---------------//
   const int rxPin = 3;
   const int txPin = 1;
@@ -18,9 +21,7 @@
   //EndPinDefinitions;
   
   
-  
-  
-  
+
   //PinNumInstantiations
   ////---------------GPS---------------//
   SoftwareSerial GPS (rxPin, txPin);
@@ -37,14 +38,14 @@ void setup() {
   //---------------ESP---------------//
   Serial.begin(115200);                                              
   Serial2.begin(115200);
-
-  Serial.println("\nSoftware serial test started");
-
-   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
+  initESP();
+  //--------------SERVO---------------//
+  leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
   rightServo.attach(3); //attaches the servo on pin 3 to the servo object
+
+  
 }
 
-2
 void loop() {
   //---------------HC-SR04---------------//
   // Clears the trigPin
@@ -94,5 +95,38 @@ void loop() {
     rightServo.write(pos);             //tell servo to go to position in variable 'pos'
     delay(15);                         //waits 15ms for the servo to reach the position
   }
+ 
+}
 
+void initESP() {
+  Serial.println("\nESP initialization beginning...");
+  delay(50);
+  Serial2.write("AT+CIPMUX=1\r\n");
+    while (Serial2.available() > 0) {
+    Serial.write(Serial2.read());
+  }
+  delay(400);
+  Serial2.write("AT+CWMODE=2\r\n");
+    while (Serial2.available() > 0) {
+    Serial.write(Serial2.read());
+  }
+  delay(400);
+  Serial2.write("AT+CIPSERVER=1\r\n");
+    while (Serial2.available() > 0) {
+    Serial.write(Serial2.read());
+  }
+  delay(400);
+  Serial2.write("AT+CIPAP=\"192.168.88.88\"\r\n");
+    while (Serial2.available() > 0) {
+    Serial.write(Serial2.read());
+  }
+  delay(400);
+  Serial2.write("AT+CWSAP=\"BlimpOverCuse\",\"blimp\",3,0\r\n");
+    while (Serial2.available() > 0) {
+    Serial.write(Serial2.read());
+  }
+  delay(400);
+  
+  
+  Serial.println("\nESP initialization complete."); 
 }
