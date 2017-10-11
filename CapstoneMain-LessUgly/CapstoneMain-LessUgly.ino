@@ -54,25 +54,14 @@ void setup() {
 
 void loop() {
   parseReceiveString(receiveMessage(Serial2), Serial1, Serial2);
-  //---------------HC-SR04---------------//
-  
- 
-/*
-  //---------------SERVO---------------//
-  for (pos = 0; pos <= 180; pos += 1) {//goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    leftServo.write(pos);              //tell servo to go to position in variable 'pos'
-    rightServo.write(pos);             //tell servo to go to position in variable 'pos'
-    delay(15);                         //waits 15ms for the servo to reach the position
-  }
-  for (pos = 180; pos >= 0; pos -= 1) {// goes from 180 degrees to 0 degrees
-    leftServo.write(pos);              //tell servo to go to position in variable 'pos'
-    rightServo.write(pos);             //tell servo to go to position in variable 'pos'
-    delay(15);                         //waits 15ms for the servo to reach the position
-  }
-*/
 }
 
+void moveServo(int angle){
+  pos = angle;
+  leftServo.write(pos);              //tell servo to go to position in variable 'pos'
+  rightServo.write(pos);             //tell servo to go to position in variable 'pos'
+  delay(15);                         //waits 15ms for the servo to reach the position
+}
 
 String receiveMessage(HardwareSerial &serialFromESP){
     lastMessageReceived = "";           //resets the global variable to be an empty string
@@ -186,7 +175,7 @@ void initESP() {
     Serial.write(Serial2.read());
   }
   delay(400);
-  Serial2.write("AT+CWSAP=\"BlimpOverCuse\",\"blimp\",3,0\r\n");
+  Serial2.write("AT+CWSAP=\"RoverOnCuse\",\"rover\",3,0\r\n");
     while (Serial2.available() > 0) {
     Serial.write(Serial2.read());
   }
