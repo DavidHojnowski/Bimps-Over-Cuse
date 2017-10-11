@@ -3,11 +3,12 @@ public class CarController {
 	//TODO: get the commands we are going o use in the protocol to use
 	//TODO: add the socket, not right now for testing as it will cause a location not found type of excpetion
 	Model carModel;
-	//CarSocket carSock;
+	CarSocket carSock;
 	
 	public CarController(Model carModel){
 		this.carModel = carModel;
-		//carSock = new CarSocket();
+		carSock = new CarSocket();
+		carSock.connect();
 	}
 	
 	public void keyPressed(Keys key){
@@ -92,12 +93,12 @@ public class CarController {
 			else if(carModel.goingLeft()){
 				//send command going left
 				System.out.println("LEFT");
-				writeToCar("LEFT");
+				writeToCar("LFT");
 			}
 			else if(carModel.goingRight()){
 				//send command going right
 				System.out.println("RIGHT");
-				writeToCar("RIGHT");
+				writeToCar("RGT");
 			}
 		}
 		else{//We're not moving
@@ -109,9 +110,9 @@ public class CarController {
 	
 	private void writeToCar(String s){
 		//TODO: ad the socket implemtaiton
-		/*
+		
 		carSock.write(s);
-		*/
+		
 	}
 }
 

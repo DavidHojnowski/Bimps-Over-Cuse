@@ -8,8 +8,14 @@ void setup() {
 
 }
 
+void loop(){
+  
+}
+
 
 void initESP() {
+  Serial2.write("AT+UART_DEF=9600,8,1,0,0\r\n");
+  /*
   Serial.println("\nESP initialization beginning...");
   delay(50);
   Serial2.write("AT+CIPMUX=1\r\n");
@@ -50,7 +56,7 @@ void loop() {
   while (Serial.available() > 0) {
     Serial2.write(Serial.read());
   }
-  
+  */
 
 }
 

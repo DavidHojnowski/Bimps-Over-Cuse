@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 
 public class CarSocket {
 	private static final String ADDRS = "192.168.88.88";
-	private static final int PORT = 0; //Need to get the port were using 
+	private static final int PORT = 333; //Need to get the port were using 
 	private Socket carSock;
 	private BufferedReader in;
 	private PrintWriter out;
