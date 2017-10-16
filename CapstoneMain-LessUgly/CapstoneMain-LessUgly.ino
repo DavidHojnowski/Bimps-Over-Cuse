@@ -53,7 +53,7 @@ void setup() {
 
 
 void loop() {
-  parseReceiveString(receiveMessage(Serial2, Serial1), Serial1, Serial2);
+  parseReceiveString(receiveMessage(Serial2, Serial), Serial, Serial2);
   delay(2000);
 }
 
@@ -67,7 +67,9 @@ void moveServo(int angle){
 String receiveMessage(HardwareSerial &serialFromESP, HardwareSerial &serialToMonitor){
     lastMessageReceived = "";           //resets the global variable to be an empty string
   while (serialFromESP.available() > 0) {
-    lastMessageReceived.concat(serialFromESP.read()); //builds the new string off the input sitting on the Serial2 pins
+    char tempChar = serialFromESP.read();
+    serialToMonitor.write(tempChar);
+    lastMessageReceived.concat(tempChar); //builds the new string off the input sitting on the Serial2 pins
   }
   //sendMessage(lastMessageReceived, Serial);         //Writing what we receive from serial
   for(int i = 0; i<lastMessageReceived.length();i++){
