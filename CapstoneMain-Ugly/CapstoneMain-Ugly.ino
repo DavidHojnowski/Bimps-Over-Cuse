@@ -35,9 +35,8 @@ void setup() {
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   //---------------GPS---------------//
   GPS.begin(9600);
-  //---------------ESP---------------//
-  Serial.begin(115200);                                              
-  Serial2.begin(115200);
+  //---------------ESP---------------//                                         
+  Serial2.begin(9600);
   initESP();
   //--------------SERVO---------------//
   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
