@@ -53,7 +53,7 @@ void setup() {
 
 
 void loop() {
-  parseReceiveString(receiveMessage(Serial2, Serial), Serial, Serial2);
+  parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
   delay(2000);
 }
 
@@ -64,7 +64,7 @@ void moveServo(int angle){
   delay(15);                         //waits 15ms for the servo to reach the position
 }
 
-String receiveMessage(HardwareSerial &serialFromESP, HardwareSerial &serialToMonitor){
+String receiveMessage(HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
     lastMessageReceived = "";           //resets the global variable to be an empty string
   while (serialFromESP.available() > 0) {
     char tempChar = serialFromESP.read();
@@ -111,13 +111,13 @@ void parseReceiveString(String messageReceived, HardwareSerial &HSer1, HardwareS
     firstThreeChars = messageReceived[0] + messageReceived[1] + messageReceived[2];
 
           if(firstThreeChars == "FWD"){     //Case 1: Forward + Speed
-          Serial.write("F");
+          HSer1.write('F');
     }else if(firstThreeChars == "LFT"){     //Case 2: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
-       Serial.write("L");
+       HSer1.write('L');
     }else if(firstThreeChars == "RGT"){     //Case 3: Right (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
-       Serial.write("R");
+       HSer1.write('R');
     }else if(firstThreeChars == "BRK"){     //Case 4: Engage brakes; Bring car velocity to 0.
-       Serial.write("B");
+       HSer1.write('B');
     }else if(firstThreeChars == "LOC"){     //Case 5: Send back GPS coordinates to the computer
         sendMessage("LOC", Serial2);
         sendMessage(getGPSData(), Serial2);
