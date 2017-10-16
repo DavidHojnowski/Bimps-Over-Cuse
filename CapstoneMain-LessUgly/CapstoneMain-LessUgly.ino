@@ -45,16 +45,14 @@ void setup() {
   GPS.begin(9600);
   //---------------ESP---------------//
   initESP();
-  Serial.println("\nSoftware serial test started");
+  Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------//
   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
   rightServo.attach(3); //attaches the servo on pin 3 to the servo object
 }
 
-
 void loop() {
   parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
-  delay(2000);
 }
 
 void moveServo(int angle){
@@ -72,9 +70,10 @@ String receiveMessage(HardwareSerial &serialToMonitor, HardwareSerial &serialFro
     lastMessageReceived.concat(tempChar); //builds the new string off the input sitting on the Serial2 pins
   }
   //sendMessage(lastMessageReceived, Serial);         //Writing what we receive from serial
-  for(int i = 0; i<lastMessageReceived.length();i++){
+  //Serial.println(lastMessageReceived);
+  /*for(int i = 0; i<lastMessageReceived.length();i++){
     Serial.write(lastMessageReceived[i]);
-  }
+  }*/
   return lastMessageReceived;
 }
 
@@ -190,4 +189,5 @@ void initESP() {
   
   Serial.println("\nESP initialization complete."); 
 }
+
 
