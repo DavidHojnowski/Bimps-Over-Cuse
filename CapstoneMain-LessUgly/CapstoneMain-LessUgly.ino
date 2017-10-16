@@ -10,6 +10,17 @@
   const int echoPin = 24;
   long duration;
   int distance;
+  //------------Pins for 4 motors-----------------//
+  //4 pins two for each channel
+  //left motors
+  int in1 = 26;
+  int in2 = 28;
+  //right motors
+  int in3 = 27;
+  int in4 = 29;
+  //The PWM bits for the 2 chanesl
+  int ENA = 2;
+  int ENB = 3;
   //---------------GPS---------------//
   const int rxPin = 3;
   const int txPin = 1;
@@ -41,6 +52,17 @@ void setup() {
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   double duration;
   double distance;
+  //------------------ 4 Motors-----------------------
+  pinMode(in1,OUTPUT);
+  pinMode(in2,OUTPUT);
+  pinMode(in3,OUTPUT);
+  pinMode(in4,OUTPUT);
+  pinMode(ENA,OUTPUT);
+  pinMode(ENB,OUTPUT);
+  //the PWM's can have a range of 0-255
+  analogWrite(ENA, 100);
+  analogWrite(ENB, 100);
+  
   //---------------GPS---------------//
   GPS.begin(9600);
   //---------------ESP---------------//
@@ -188,6 +210,46 @@ void initESP() {
   
   
   Serial.println("\nESP initialization complete."); 
+}
+
+void goForward(){
+  digitalWrite(in1,LOW);//digital output
+  digitalWrite(in2,HIGH);
+  digitalWrite(in3,LOW);
+  digitalWrite(in4,HIGH);
+  Serial.println("Forward");
+}
+
+void goBack(){
+  digitalWrite(in1,HIGH);
+  digitalWrite(in2,LOW);
+  digitalWrite(in3,HIGH);
+  digitalWrite(in4,LOW);
+  Serial.println("Back");
+}
+
+void goLeft(){
+  digitalWrite(in1,LOW);
+  digitalWrite(in2,HIGH);
+  digitalWrite(in3,HIGH);
+  digitalWrite(in4,LOW);
+  Serial.println("Left");
+}
+
+void goRight(){
+  digitalWrite(in1,HIGH);
+  digitalWrite(in2,LOW);
+  digitalWrite(in3,LOW);
+  digitalWrite(in4,HIGH);
+  Serial.println("Right");
+}
+
+void stop(){
+  digitalWrite(in1,LOW);
+  digitalWrite(in2,LOW);
+  digitalWrite(in3,LOW);
+  digitalWrite(in4,LOW);
+  Serial.println("Stop");
 }
 
 
