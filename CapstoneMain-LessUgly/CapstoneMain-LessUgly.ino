@@ -67,6 +67,7 @@ void setup() {
   GPS.begin(9600);
   //---------------ESP---------------//
   initESP();
+  delay(100);
   Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------//
   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
@@ -74,6 +75,7 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println(receiveMessage(Serial, Serial2));
   parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
 }
 
@@ -85,17 +87,8 @@ void moveServo(int angle){
 }
 
 String receiveMessage(HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
-    lastMessageReceived = "";           //resets the global variable to be an empty string
-  while (serialFromESP.available() > 0) {
-    char tempChar = serialFromESP.read();
-    serialToMonitor.write(tempChar);
-    lastMessageReceived.concat(tempChar); //builds the new string off the input sitting on the Serial2 pins
-  }
-  //sendMessage(lastMessageReceived, Serial);         //Writing what we receive from serial
-  //Serial.println(lastMessageReceived);
-  /*for(int i = 0; i<lastMessageReceived.length();i++){
-    Serial.write(lastMessageReceived[i]);
-  }*/
+  lastMessageReceived;           //resets the global variable to be an empty string
+  lastMessageReceived = serialFromESP.readStringUntil('\n');
   return lastMessageReceived;
 }
 
@@ -105,11 +98,11 @@ void sendMessage(String message, HardwareSerial &serialToESP){
   customCIPSend += crlf;
   message += crlf;
   
-  for(int j = 0; j < customCIPSend.length(); j++){
+  for(int j = 0; j < customCIPSend.length()-1; j++){
     serialToESP.write(customCIPSend[j]);
   }
   
-  for(int i = 0; i < message.length(); i++){
+  for(int i = 0; i < message.length()-1; i++){
     serialToESP.write(message[i]);
   }
 }
@@ -125,31 +118,58 @@ String getGPSData(){
   return GPSData;
 }
 
-void parseReceiveString(String messageReceived, HardwareSerial &HSer1, HardwareSerial &HSer2){
+String trimString(String toTrim){  //Trims the header data off of the received messages
+  int posInString = 0;
+  int colonPos;
+  String trimmedString = "";
+  
+  while(posInString < toTrim.length()-1){
+    if(toTrim[posInString] == ':'){
+      colonPos = posInString;
+      break;
+    }
+    posInString++;
+  }
+  for(int i = colonPos + 1; i < toTrim.length()-1; i++){
+    trimmedString += toTrim[i];
+  }
+  
+  return trimmedString;
+}
+
+void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
   int msgLength = messageReceived.length();
   String firstThreeChars;
-  if(msgLength > 2){
-    firstThreeChars = messageReceived[0] + messageReceived[1] + messageReceived[2];
+  if(msgLength > 5){
+    messageReceived = trimString(messageReceived);
+    //next three lines build our new string....probably can be done in a much better way, but it works and is relatively quick.
+    firstThreeChars = messageReceived[0];
+    firstThreeChars.concat(messageReceived[1]);
+    firstThreeChars.concat(messageReceived[2]);
 
-          if(firstThreeChars == "FWD"){     //Case 1: Forward + Speed
-          HSer1.write('F');
-    }else if(firstThreeChars == "LFT"){     //Case 2: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
-       HSer1.write('L');
-    }else if(firstThreeChars == "RGT"){     //Case 3: Right (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
-       HSer1.write('R');
-    }else if(firstThreeChars == "BRK"){     //Case 4: Engage brakes; Bring car velocity to 0.
-       HSer1.write('B');
-    }else if(firstThreeChars == "LOC"){     //Case 5: Send back GPS coordinates to the computer
-        sendMessage("LOC", Serial2);
-        sendMessage(getGPSData(), Serial2);
-    }else if(firstThreeChars == "DNT"){     //Case 6: doDonuts = true;
-
-    }else if(firstThreeChars == "SON"){     //Case 7: Sonar (designed for multiple sonars
-      if(messageReceived[3] == 0){          //UseSonarEntity0
+          if(firstThreeChars.equals("FWD")){     //Case 1: Forward + Speed
+          serialToMonitor.println("FWD");
+    }else if(firstThreeChars.equals("LFT")){     //Case 2: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
+       serialToMonitor.println("LFT");
+    }else if(firstThreeChars.equals("RGT")){     //Case 3: Right (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
+       serialToMonitor.println("RGT");
+    }else if(firstThreeChars.equals("BRK")){     //Case 4: Engage brakes; Bring car velocity to 0.
+       serialToMonitor.println("BRK");
+    }else if(firstThreeChars.equals("LOC")){     //Case 5: Send back GPS coordinates to the computer
+      serialToMonitor.println("LOC");
+      sendMessage("LOC", Serial2);
+      sendMessage(getGPSData(), Serial2);
+    }else if(firstThreeChars.equals("BCK")){     //Case 6: doDonuts = true;
+      serialToMonitor.println("BCK");
+    }else if(firstThreeChars.equals("DNT")){     //Case 6: doDonuts = true;
+      serialToMonitor.println("DNT");
+    }else if(firstThreeChars.equals("SON")){     //Case 7: Sonar (designed for multiple sonars
+      serialToMonitor.println("SON");
+      /*if(messageReceived[3] == 0){          //UseSonarEntity0
         String distance = "" + getSonar(trigPin, echoPin);
         sendMessage("SON0", Serial2);
         sendMessage(distance, Serial2);
-      } 
+      } */
     }else if(firstThreeChars == "RSV"){     //Case 7: Empty Case
       
     }

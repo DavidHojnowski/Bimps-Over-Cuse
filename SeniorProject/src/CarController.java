@@ -86,8 +86,8 @@ public class CarController {
 				}
 				else{
 					//send command backward 
-					System.out.println("BCKWD");
-					writeToCar("BCKWD");
+					System.out.println("BCK");
+					writeToCar("BCK");
 				}
 			}
 			else if(carModel.goingLeft()){
