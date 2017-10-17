@@ -67,7 +67,7 @@ void setup() {
   GPS.begin(9600);
   //---------------ESP---------------//
   initESP();
-  delay(100);
+  delay(400);
   Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------//
   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
@@ -147,7 +147,7 @@ void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor,
     firstThreeChars.concat(messageReceived[1]);
     firstThreeChars.concat(messageReceived[2]);
 
-          if(firstThreeChars.equals("FWD")){     //Case 1: Forward + Speed
+          if(firstThreeChars.equals("FWD")){     //Case 1: Forward
           serialToMonitor.println("FWD");
     }else if(firstThreeChars.equals("LFT")){     //Case 2: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
        serialToMonitor.println("LFT");
@@ -159,18 +159,18 @@ void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor,
       serialToMonitor.println("LOC");
       sendMessage("LOC", Serial2);
       sendMessage(getGPSData(), Serial2);
-    }else if(firstThreeChars.equals("BCK")){     //Case 6: doDonuts = true;
+    }else if(firstThreeChars.equals("BCK")){     //Case 6: Backward
       serialToMonitor.println("BCK");
-    }else if(firstThreeChars.equals("DNT")){     //Case 6: doDonuts = true;
+    }else if(firstThreeChars.equals("DNT")){     //Case 7: doDonuts = true;
       serialToMonitor.println("DNT");
-    }else if(firstThreeChars.equals("SON")){     //Case 7: Sonar (designed for multiple sonars
+    }else if(firstThreeChars.equals("SON")){     //Case 8: Sonar (designed for multiple sonars
       serialToMonitor.println("SON");
       /*if(messageReceived[3] == 0){          //UseSonarEntity0
         String distance = "" + getSonar(trigPin, echoPin);
         sendMessage("SON0", Serial2);
         sendMessage(distance, Serial2);
       } */
-    }else if(firstThreeChars == "RSV"){     //Case 7: Empty Case
+    }else if(firstThreeChars == "RSV"){     //Case 9: Empty Case
       
     }
   }
