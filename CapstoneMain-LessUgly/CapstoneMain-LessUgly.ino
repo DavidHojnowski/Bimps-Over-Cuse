@@ -8,8 +8,6 @@
   //---------------HC-SR04---------------//
   const int trigPin = 22;
   const int echoPin = 24;
-  long duration;
-  int distance;
   //------------Pins for 4 motors-----------------//
   //4 pins two for each channel
   //left motors
@@ -32,6 +30,9 @@
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
   const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
   const String crlf = "\r\n";
+  long duration;
+  int distance;
+  boolean doDonuts = false;
   //EndPinDefinitions;
   
   
@@ -149,21 +150,32 @@ void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor,
 
           if(firstThreeChars.equals("FWD")){     //Case 1: Forward
           serialToMonitor.println("FWD");
+          goForward();
     }else if(firstThreeChars.equals("LFT")){     //Case 2: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
        serialToMonitor.println("LFT");
+       goLeft();
     }else if(firstThreeChars.equals("RGT")){     //Case 3: Right (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
        serialToMonitor.println("RGT");
+       goRight();
     }else if(firstThreeChars.equals("BRK")){     //Case 4: Engage brakes; Bring car velocity to 0.
        serialToMonitor.println("BRK");
+       roverStop();
     }else if(firstThreeChars.equals("LOC")){     //Case 5: Send back GPS coordinates to the computer
       serialToMonitor.println("LOC");
       sendMessage("LOC", Serial2);
       sendMessage(getGPSData(), Serial2);
     }else if(firstThreeChars.equals("BCK")){     //Case 6: Backward
       serialToMonitor.println("BCK");
+      goBack();
     }else if(firstThreeChars.equals("DNT")){     //Case 7: doDonuts = true;
       serialToMonitor.println("DNT");
-    }else if(firstThreeChars.equals("SON")){     //Case 8: Sonar (designed for multiple sonars
+      while(doDonuts){
+        //roverDonut();
+        if(doDonuts){
+          doDonuts = false;
+        }
+      }
+    }else if(firstThreeChars.equals("SON")){     //Case 8: Sonar (Need to implement servo for looking left,str8,right
       serialToMonitor.println("SON");
       /*if(messageReceived[3] == 0){          //UseSonarEntity0
         String distance = "" + getSonar(trigPin, echoPin);
@@ -264,7 +276,7 @@ void goRight(){
   Serial.println("Right");
 }
 
-void stop(){
+void roverStop(){
   digitalWrite(in1,LOW);
   digitalWrite(in2,LOW);
   digitalWrite(in3,LOW);
