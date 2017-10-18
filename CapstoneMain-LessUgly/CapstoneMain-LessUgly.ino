@@ -61,8 +61,8 @@ void setup() {
   pinMode(ENA,OUTPUT);
   pinMode(ENB,OUTPUT);
   //the PWM's can have a range of 0-255
-  analogWrite(ENA, 100);
-  analogWrite(ENB, 100);
+  analogWrite(ENA, 255);
+  analogWrite(ENB, 255);
   
   //---------------GPS---------------//
   GPS.begin(9600);
@@ -78,6 +78,9 @@ void setup() {
 void loop() {
   //Serial.println(receiveMessage(Serial, Serial2));
   parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
+  analogWrite(ENA, 255);
+  analogWrite(ENB, 255);
+  //goForward();
 }
 
 void moveServo(int angle){
