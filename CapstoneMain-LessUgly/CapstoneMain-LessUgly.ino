@@ -78,6 +78,7 @@ void setup() {
 void loop() {
   //Serial.println(receiveMessage(Serial, Serial2));
   parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
+  //constantly writing out a pwm at 255 to enable the motors all the time
   analogWrite(ENA, 255);
   analogWrite(ENB, 255);
   //goForward();

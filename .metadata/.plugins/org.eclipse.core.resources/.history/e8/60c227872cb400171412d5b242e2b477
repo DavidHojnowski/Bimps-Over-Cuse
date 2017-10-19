@@ -1,12 +1,7 @@
 
 public class CarController {
-	//the commands we are using in the protocol 
-	private final static String FORWARD = "FWD";
-	private final static String BACKWARD ="BCK";
-	private final static String LEFT = "LFT";
-	private final static String RIGHT = "RGT";
-	private final static String STOP = "STP";
-	
+	//TODO: get the commands we are going o use in the protocol to use
+	//TODO: add the socket, not right now for testing as it will cause a location not found type of excpetion
 	Model carModel;
 	CarSocket carSock;
 	
@@ -62,12 +57,12 @@ public class CarController {
 		if(carModel.isMoving()){
 			//then see what direction were moving
 			if(carModel.goingFwd()){
-				if(carModel.goingLeft()){ //NOT CURRENTLY USED
+				if(carModel.goingLeft()){
 					//send command forward left
 					System.out.println("FWD + LEFT");
 					writeToCar("FWD + LEFT");
 				}
-				else if(carModel.goingRight()){ //NOT CURRENTLY USED
+				else if(carModel.goingRight()){
 					//send command forward right
 					System.out.println("FWD + RIGHT");
 					writeToCar("FWD + RIGHT");
@@ -75,16 +70,16 @@ public class CarController {
 				else{
 					//send command forward 
 					System.out.println("FWD");
-					writeToCar(FORWARD);
+					writeToCar("FWD");
 				}
 			}
 			else if(carModel.goingBckWd()){
-				if(carModel.goingLeft()){//NOT CURRENTLY USED
+				if(carModel.goingLeft()){
 					//send command backward left
 					System.out.println("BCKWD + LEFT");
 					writeToCar("BCKWD + LEFT");
 				}
-				else if(carModel.goingRight()){//NOT CURRENTLY USED
+				else if(carModel.goingRight()){
 					//send command backward right
 					System.out.println("BCKWD + RIGHT");
 					writeToCar("BCKWD + RIGHT");
@@ -92,29 +87,31 @@ public class CarController {
 				else{
 					//send command backward 
 					System.out.println("BCK");
-					writeToCar(BACKWARD);
+					writeToCar("BCK");
 				}
 			}
 			else if(carModel.goingLeft()){
 				//send command going left
 				System.out.println("LEFT");
-				writeToCar(LEFT);
+				writeToCar("LFT");
 			}
 			else if(carModel.goingRight()){
 				//send command going right
 				System.out.println("RIGHT");
-				writeToCar(RIGHT);
+				writeToCar("RGT");
 			}
 		}
 		else{//We're not moving
 			//may want to send break command
-			System.out.println("Stop");
-			writeToCar(STOP);
+			System.out.println("NOT MOVING");
+			writeToCar("STP");
 		}
 	}
 	
 	
-	private void writeToCar(String s){		
+	private void writeToCar(String s){
+		//TODO: ad the socket implemtaiton
+		
 		carSock.write(s);
 		
 	}

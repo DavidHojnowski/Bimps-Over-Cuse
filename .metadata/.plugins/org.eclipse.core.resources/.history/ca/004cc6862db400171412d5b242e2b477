@@ -1,12 +1,7 @@
 
 public class CarController {
 	//the commands we are using in the protocol 
-	private final static String FORWARD = "FWD";
-	private final static String BACKWARD ="BCK";
-	private final static String LEFT = "LFT";
-	private final static String RIGHT = "RGT";
-	private final static String STOP = "STP";
-	
+	private final static String forward = "FWD";
 	Model carModel;
 	CarSocket carSock;
 	
@@ -75,7 +70,7 @@ public class CarController {
 				else{
 					//send command forward 
 					System.out.println("FWD");
-					writeToCar(FORWARD);
+					writeToCar("FWD");
 				}
 			}
 			else if(carModel.goingBckWd()){
@@ -92,24 +87,24 @@ public class CarController {
 				else{
 					//send command backward 
 					System.out.println("BCK");
-					writeToCar(BACKWARD);
+					writeToCar("BCK");
 				}
 			}
 			else if(carModel.goingLeft()){
 				//send command going left
 				System.out.println("LEFT");
-				writeToCar(LEFT);
+				writeToCar("LFT");
 			}
 			else if(carModel.goingRight()){
 				//send command going right
 				System.out.println("RIGHT");
-				writeToCar(RIGHT);
+				writeToCar("RGT");
 			}
 		}
 		else{//We're not moving
 			//may want to send break command
-			System.out.println("Stop");
-			writeToCar(STOP);
+			System.out.println("NOT MOVING");
+			writeToCar("STP");
 		}
 	}
 	

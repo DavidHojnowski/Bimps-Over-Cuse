@@ -108,7 +108,7 @@ public class CarController {
 		}
 		else{//We're not moving
 			//may want to send break command
-			System.out.println("Stop");
+			System.out.println("NOT MOVING");
 			writeToCar(STOP);
 		}
 	}
