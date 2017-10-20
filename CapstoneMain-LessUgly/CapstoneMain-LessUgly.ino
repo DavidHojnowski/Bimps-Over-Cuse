@@ -48,7 +48,7 @@
 void setup() {
   Serial.begin(9600); // Starts the serial communication
   Serial2.begin(9600);
-  Serial2.setTimeout(2); //this sets the timeout for Serial.readBytesUntil(), Serial.readBytes(), Serial.parseInt() or Serial.parseFloat() methods.
+  Serial2.setTimeout(3); //this sets the timeout for Serial.readBytesUntil(), Serial.readBytes(), Serial.parseInt() or Serial.parseFloat() methods.
   //---------------HC-SR04---------------//
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
@@ -74,8 +74,6 @@ void setup() {
   //----------------Servo------------//
   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
   rightServo.attach(3); //attaches the servo on pin 3 to the servo object
-
-  int count = 0;
 }
 
 void loop() {
@@ -84,7 +82,6 @@ void loop() {
   //constantly writing out a pwm at 255 to enable the motors all the time
   analogWrite(ENA, 255);
   analogWrite(ENB, 255);
-  //goForward();
 }
 
 void moveServo(int angle){
@@ -127,7 +124,7 @@ String getGPSData(){
 }
 
 String trimString(String toTrim){  //Trims the header data off of the received messages
-  int posInString = 6;  //Since we know the message will have "+IPD=x,y:" we can just jump it further into our string to speed it up a bit
+  int posInString = 0;  //Since we know the message will have "+IPD=x,y:" we can just jump it further into our string to speed it up a bit
   int colonPos;
   int toTrimLength = toTrim.length();
   String trimmedString = "";
@@ -148,12 +145,15 @@ String trimString(String toTrim){  //Trims the header data off of the received m
 
 void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
   String firstThreeChars;
+  if(messageReceived.length() > 2){
+    Serial.println(messageReceived);
+  }
   if(messageReceived.length() > 5){
     messageReceived = trimString(messageReceived);
-    
+
     firstThreeChars = messageReceived[0];
-    firstThreeChars += messageReceived[0];
-    firstThreeChars += messageReceived[0];
+    firstThreeChars += messageReceived[1];
+    firstThreeChars += messageReceived[2];
 
           if(firstThreeChars.equals("FWD")){     //Case 1: Forward
           serialToMonitor.println("FWD");
@@ -246,7 +246,12 @@ void initESP() {
     Serial.write(Serial2.read());
   }
   delay(400);
-  
+
+  Serial2.write("AT+ATE0");
+      while (Serial2.available() > 0) {
+    Serial.write(Serial2.read());
+    
+  }
   
   Serial.println("\nESP initialization complete."); 
 }

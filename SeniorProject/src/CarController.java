@@ -6,6 +6,7 @@ public class CarController {
 	private final static String LEFT = "LFT";
 	private final static String RIGHT = "RGT";
 	private final static String STOP = "STP";
+	private final static String BRAKE = "BRK";
 	
 	Model carModel;
 	CarSocket carSock;
@@ -108,8 +109,8 @@ public class CarController {
 		}
 		else{//We're not moving
 			//may want to send break command
-			System.out.println("Stop");
-			writeToCar(STOP);
+			System.out.println("BRAKE");
+			writeToCar(BRAKE);
 		}
 	}
 	
