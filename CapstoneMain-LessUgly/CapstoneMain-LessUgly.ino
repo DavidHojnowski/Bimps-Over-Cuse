@@ -48,6 +48,7 @@
 void setup() {
   Serial.begin(9600); // Starts the serial communication
   Serial2.begin(9600);
+  Serial2.setTimeout(2); //this sets the timeout for Serial.readBytesUntil(), Serial.readBytes(), Serial.parseInt() or Serial.parseFloat() methods.
   //---------------HC-SR04---------------//
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
@@ -73,6 +74,8 @@ void setup() {
   //----------------Servo------------//
   leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
   rightServo.attach(3); //attaches the servo on pin 3 to the servo object
+
+  int count = 0;
 }
 
 void loop() {
@@ -124,18 +127,19 @@ String getGPSData(){
 }
 
 String trimString(String toTrim){  //Trims the header data off of the received messages
-  int posInString = 0;
+  int posInString = 6;  //Since we know the message will have "+IPD=x,y:" we can just jump it further into our string to speed it up a bit
   int colonPos;
+  int toTrimLength = toTrim.length();
   String trimmedString = "";
   
-  while(posInString < toTrim.length()-1){
+  while(posInString < toTrimLength-1){
     if(toTrim[posInString] == ':'){
       colonPos = posInString;
       break;
     }
     posInString++;
   }
-  for(int i = colonPos + 1; i < toTrim.length()-1; i++){
+  for(int i = colonPos + 1; i < toTrimLength-1; i++){
     trimmedString += toTrim[i];
   }
   
@@ -143,14 +147,13 @@ String trimString(String toTrim){  //Trims the header data off of the received m
 }
 
 void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
-  int msgLength = messageReceived.length();
   String firstThreeChars;
-  if(msgLength > 5){
+  if(messageReceived.length() > 5){
     messageReceived = trimString(messageReceived);
-    //next three lines build our new string....probably can be done in a much better way, but it works and is relatively quick.
+    
     firstThreeChars = messageReceived[0];
-    firstThreeChars.concat(messageReceived[1]);
-    firstThreeChars.concat(messageReceived[2]);
+    firstThreeChars += messageReceived[0];
+    firstThreeChars += messageReceived[0];
 
           if(firstThreeChars.equals("FWD")){     //Case 1: Forward
           serialToMonitor.println("FWD");
@@ -186,7 +189,7 @@ void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor,
         sendMessage("SON0", Serial2);
         sendMessage(distance, Serial2);
       } */
-    }else if(firstThreeChars == "RSV"){     //Case 9: Empty Case
+    }else if(firstThreeChars == "RSV"){     //Case 9: Empty Case; Reserved
       
     }
   }
