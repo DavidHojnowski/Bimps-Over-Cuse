@@ -23,8 +23,7 @@
   const int rxPin = 3;
   const int txPin = 1;
   //---------------SERVO---------------//
-  Servo leftServo;  //create servo objects to control servos; left
-  Servo rightServo; //right
+  Servo sonarServo;  //create servo objects to control servos; left
   int pos = 0;    //variable to store the servo position
   //---------------Global---------------//
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
@@ -72,22 +71,23 @@ void setup() {
   delay(400);
   Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------//
-  leftServo.attach(2);  //attaches the servo on pin 2 to the servo object
-  rightServo.attach(3); //attaches the servo on pin 3 to the servo object
+  sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
 }
 
 void loop() {
   //Serial.println(receiveMessage(Serial, Serial2));
-  parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
+ // parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
   //constantly writing out a pwm at 255 to enable the motors all the time
-  analogWrite(ENA, 255);
-  analogWrite(ENB, 255);
+ // analogWrite(ENA, 255);
+ // analogWrite(ENB, 255);
+  //moveServo(90);
+  getSonar();
+  delay(200);
 }
 
 void moveServo(int angle){
   pos = angle;
-  leftServo.write(pos);              //tell servo to go to position in variable 'pos'
-  rightServo.write(pos);             //tell servo to go to position in variable 'pos'
+  sonarServo.write(pos);              //tell servo to go to position in variable 'pos'
   delay(15);                         //waits 15ms for the servo to reach the position
 }
 
@@ -195,27 +195,25 @@ void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor,
   }
 }
 
-long getSonar(int enable, int echo){
-  // Clears the enable
-  digitalWrite(enable, LOW);
+void getSonar(){
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   
-  // Sets the enable on HIGH state for 10 micro seconds
-  digitalWrite(enable, HIGH);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
-  digitalWrite(enable, LOW);
+  digitalWrite(trigPin, LOW);
   
-  // Reads the echo, returns the sound wave travel time in microseconds
-  duration = pulseIn(echo, HIGH);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
   
   // Calculating the distance
-  distance = duration*0.034/2;
+  distance= duration*0.034/2;
   
   // Prints the distance on the Serial Monitor
   Serial.print("Distance: ");
   Serial.println(distance);
-  
-  return distance;
 }
 
 void initESP() {
