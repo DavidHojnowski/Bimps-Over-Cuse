@@ -39,21 +39,21 @@
   
   
   //PinNumInstantiations
-  ////---------------GPS---------------//
+  ////---------------GPS---------------\\
   SoftwareSerial GPS (rxPin, txPin);
-  //---------------SERVO---------------//
+  //---------------SERVO---------------\\
   
 
 void setup() {
   Serial.begin(9600); // Starts the serial communication
   Serial2.begin(9600);
   Serial2.setTimeout(3); //this sets the timeout for Serial.readBytesUntil(), Serial.readBytes(), Serial.parseInt() or Serial.parseFloat() methods.
-  //---------------HC-SR04---------------//
+  //---------------HC-SR04---------------\\
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   double duration;
   double distance;
-  //------------------ 4 Motors-----------------------
+  //---------------Motors---------------\\
   pinMode(in1,OUTPUT);
   pinMode(in2,OUTPUT);
   pinMode(in3,OUTPUT);
@@ -64,13 +64,13 @@ void setup() {
   analogWrite(ENA, 255);
   analogWrite(ENB, 255);
   
-  //---------------GPS---------------//
+  //---------------GPS---------------\\
   GPS.begin(9600);
-  //---------------ESP---------------//
+  //---------------ESP---------------\\
   initESP();
   delay(400);
   Serial.println("\nParsing incoming data:\n");
-  //----------------Servo------------//
+  //----------------Servo------------\\
   sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
 }
 
@@ -85,11 +85,8 @@ void loop() {
   delay(200);
 }
 
-void moveServo(int angle){
-  pos = angle;
-  sonarServo.write(pos);              //tell servo to go to position in variable 'pos'
-  delay(15);                         //waits 15ms for the servo to reach the position
-}
+
+//---------------Communication Functions---------------\\
 
 String receiveMessage(HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
   lastMessageReceived;           //resets the global variable to be an empty string
@@ -110,17 +107,6 @@ void sendMessage(String message, HardwareSerial &serialToESP){
   for(int i = 0; i < message.length()-1; i++){
     serialToESP.write(message[i]);
   }
-}
-
-String getGPSData(){
-    String GPSData = ""; 
-    while(GPS.available())
-  {
-    char c = GPS.read();
-    GPSData += c;
-    Serial.print(c);
-  }
-  return GPSData;
 }
 
 String trimString(String toTrim){  //Trims the header data off of the received messages
@@ -195,6 +181,27 @@ void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor,
   }
 }
 
+//---------------End Communication Functions---------------\\
+
+//---------------Component Control Functions---------------\\
+
+void moveServo(int angle){
+  pos = angle;
+  sonarServo.write(pos);              //tell servo to go to position in variable 'pos'
+  delay(15);                         //waits 15ms for the servo to reach the position
+}
+
+String getGPSData(){
+    String GPSData = ""; 
+    while(GPS.available())
+  {
+    char c = GPS.read();
+    GPSData += c;
+    Serial.print(c);
+  }
+  return GPSData;
+}
+
 void getSonar(){
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
@@ -254,8 +261,13 @@ void initESP() {
   Serial.println("\nESP initialization complete."); 
 }
 
+//---------------End Component Control Functions---------------\\
+
+
+//---------------Rover Movement Functions---------------\\
+
 void goForward(){
-  digitalWrite(in1,LOW);//digital output
+  digitalWrite(in1,LOW);
   digitalWrite(in2,HIGH);
   digitalWrite(in3,LOW);
   digitalWrite(in4,HIGH);
@@ -293,5 +305,7 @@ void roverStop(){
   digitalWrite(in4,LOW);
   Serial.println("Stop");
 }
+
+//---------------End Rover Movement Functions---------------\\
 
 
