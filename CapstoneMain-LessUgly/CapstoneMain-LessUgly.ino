@@ -5,10 +5,10 @@
 
 
   //PinNumDefinitions:
-  //---------------HC-SR04---------------//
+  //---------------HC-SR04---------------\\
   const int trigPin = 22;
   const int echoPin = 24;
-  //------------Pins for 4 motors-----------------//
+  //------------Pins for 4 motors-----------------\\
   //4 pins two for each channel
   //left motors
   int in1 = 26;
@@ -19,19 +19,20 @@
   //The PWM bits for the 2 chanesl
   int ENA = 2;
   int ENB = 3;
-  //---------------GPS---------------//
+  //---------------GPS---------------\\
   const int rxPin = 3;
   const int txPin = 1;
-  //---------------SERVO---------------//
+  //---------------SERVO---------------\\
   Servo sonarServo;  //create servo objects to control servos; left
   int pos = 0;    //variable to store the servo position
-  //---------------Global---------------//
+  //---------------Global---------------\\
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
   const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
   const String crlf = "\r\n";
   long duration;
   int distance;
-  boolean doDonuts = false;
+  //---------------Transmission Mode---------------\\
+  int transMode;    //This is whether we are automatic or manual. 0 for manual, 1 for automatic
   //EndPinDefinitions;
   
   
@@ -72,10 +73,11 @@ void setup() {
   Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------\\
   sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
+  //---------------Transmission Mode---------------\\
+  transMode = 0;
 }
 
 void loop() {
-  //Serial.println(receiveMessage(Serial, Serial2));
  // parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
   //constantly writing out a pwm at 255 to enable the motors all the time
  // analogWrite(ENA, 255);
@@ -129,56 +131,45 @@ String trimString(String toTrim){  //Trims the header data off of the received m
   return trimmedString;
 }
 
-void parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
-  String firstThreeChars;
-  if(messageReceived.length() > 2){
-    Serial.println(messageReceived);
-  }
+String parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
+  String receivedCommand;
   if(messageReceived.length() > 5){
     messageReceived = trimString(messageReceived);
+    
+    receivedCommand = messageReceived[0];
+    receivedCommand += messageReceived[1];
+    receivedCommand += messageReceived[2];
 
-    firstThreeChars = messageReceived[0];
-    firstThreeChars += messageReceived[1];
-    firstThreeChars += messageReceived[2];
-
-          if(firstThreeChars.equals("FWD")){     //Case 1: Forward
-          serialToMonitor.println("FWD");
-          goForward();
-    }else if(firstThreeChars.equals("LFT")){     //Case 2: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
-       serialToMonitor.println("LFT");
-       goLeft();
-    }else if(firstThreeChars.equals("RGT")){     //Case 3: Right (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
-       serialToMonitor.println("RGT");
-       goRight();
-    }else if(firstThreeChars.equals("BRK")){     //Case 4: Engage brakes; Bring car velocity to 0.
-       serialToMonitor.println("BRK");
-       roverStop();
-    }else if(firstThreeChars.equals("LOC")){     //Case 5: Send back GPS coordinates to the computer
-      serialToMonitor.println("LOC");
-      sendMessage("LOC", Serial2);
-      sendMessage(getGPSData(), Serial2);
-    }else if(firstThreeChars.equals("BCK")){     //Case 6: Backward
-      serialToMonitor.println("BCK");
-      goBack();
-    }else if(firstThreeChars.equals("DNT")){     //Case 7: doDonuts = true;
-      serialToMonitor.println("DNT");
-      while(doDonuts){
-        //roverDonut();
-        if(doDonuts){
-          doDonuts = false;
-        }
-      }
-    }else if(firstThreeChars.equals("SON")){     //Case 8: Sonar (Need to implement servo for looking left,str8,right
-      serialToMonitor.println("SON");
-      /*if(messageReceived[3] == 0){          //UseSonarEntity0
-        String distance = "" + getSonar(trigPin, echoPin);
-        sendMessage("SON0", Serial2);
-        sendMessage(distance, Serial2);
-      } */
-    }else if(firstThreeChars == "RSV"){     //Case 9: Empty Case; Reserved
+          if(receivedCommand.equals("LFT")){     //Case 1: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
+            roverTurnLeft();
+    }else if(receivedCommand.equals("RGT")){     //Case 2: Right (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
+          roverTurnRight();
+    }else if(receivedCommand.equals("FWD")){     //Case 3: Forward
+          roverMoveForward();
+    }else if(receivedCommand.equals("BCK")){     //Case 4: Backward
+          roverMoveBackward();
+    }else if(receivedCommand.equals("BRK")){     //Case 5: Engage brakes; Bring car velocity to 0.
+          roverStop();
+    }else if(receivedCommand.equals("DNT")){     //Case 6: doDonuts = true;
+          roverDoDonuts();
+    }else if(receivedCommand.equals("LOC")){     //Case 7: Send back GPS coordinates to the computer
+          sendMessage(getGPSData(), Serial2);
+    }else if(receivedCommand.equals("PSE")){     //Case 8: Empty Case; Reserved
+          
+    }else if(receivedCommand.equals("RES")){     //Case 9: Empty Case; Reserved
+      
+    }else if(receivedCommand.equals("MAN")){     //Case 10: Empty Case; Reserved
+          transMode = 0;
+    }else if(receivedCommand.equals("ATM")){     //Case 11: Empty Case; Reserved
+          transMode = 1;
+    }else if(receivedCommand.equals("RET")){     //Case 12: Empty Case; Reserved
+      
+    }else if(receivedCommand.equals("RSV")){     //Case 13: Empty Case; Reserved
       
     }
   }
+
+  return firstThreeChars
 }
 
 //---------------End Communication Functions---------------\\
@@ -266,36 +257,32 @@ void initESP() {
 
 //---------------Rover Movement Functions---------------\\
 
-void goForward(){
+void roverMoveForward(){
   digitalWrite(in1,LOW);
   digitalWrite(in2,HIGH);
   digitalWrite(in3,LOW);
   digitalWrite(in4,HIGH);
-  Serial.println("Forward");
 }
 
-void goBack(){
+void roverMoveBackward(){
   digitalWrite(in1,HIGH);
   digitalWrite(in2,LOW);
   digitalWrite(in3,HIGH);
   digitalWrite(in4,LOW);
-  Serial.println("Back");
 }
 
-void goLeft(){
+void roverTurnLeft(){
   digitalWrite(in1,LOW);
   digitalWrite(in2,HIGH);
   digitalWrite(in3,HIGH);
   digitalWrite(in4,LOW);
-  Serial.println("Left");
 }
 
-void goRight(){
+void roverTurnRight(){
   digitalWrite(in1,HIGH);
   digitalWrite(in2,LOW);
   digitalWrite(in3,LOW);
   digitalWrite(in4,HIGH);
-  Serial.println("Right");
 }
 
 void roverStop(){
@@ -303,7 +290,20 @@ void roverStop(){
   digitalWrite(in2,LOW);
   digitalWrite(in3,LOW);
   digitalWrite(in4,LOW);
-  Serial.println("Stop");
+}
+
+void roverDoDonuts(){
+  int count = 500;
+  digitalWrite(in1,HIGH);
+  digitalWrite(in2,LOW);
+  digitalWrite(in3,LOW);
+  digitalWrite(in4,HIGH);
+  
+  while(count > 0){
+    analogWrite(ENA, 255);
+    analogWrite(ENB, 255);
+    count--;
+  }
 }
 
 //---------------End Rover Movement Functions---------------\\
