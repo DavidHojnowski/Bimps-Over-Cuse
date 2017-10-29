@@ -1,14 +1,13 @@
-#include <SoftwareSerial.h>
 #include <Servo.h>
-
+#include <SoftwareSerial.h>
 
 
 
   //PinNumDefinitions:
-  //---------------HC-SR04---------------\\
+  //---------------HC-SR04---------------//
   const int trigPin = 22;
   const int echoPin = 24;
-  //------------Pins for 4 motors-----------------\\
+  //------------Pins for 4 motors-----------------//
   //4 pins two for each channel
   //left motors
   int in1 = 26;
@@ -19,20 +18,21 @@
   //The PWM bits for the 2 chanesl
   int ENA = 2;
   int ENB = 3;
-  //---------------GPS---------------\\
+  //---------------GPS---------------//
   const int rxPin = 3;
   const int txPin = 1;
-  //---------------SERVO---------------\\
+  //---------------SERVO---------------//
   Servo sonarServo;  //create servo objects to control servos; left
   int pos = 0;    //variable to store the servo position
-  //---------------Global---------------\\
+  //---------------Global---------------//
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
   const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
   const String crlf = "\r\n";
   long duration;
   int distance;
-  //---------------Transmission Mode---------------\\
-  int transMode;    //This is whether we are automatic or manual. 0 for manual, 1 for automatic
+  boolean automatic;
+  boolean pause;
+  String commandReceived;
   //EndPinDefinitions;
   
   
@@ -40,21 +40,23 @@
   
   
   //PinNumInstantiations
-  ////---------------GPS---------------\\
+  //---------------GPS---------------//
   SoftwareSerial GPS (rxPin, txPin);
-  //---------------SERVO---------------\\
+  //---------------SERVO---------------//
   
 
 void setup() {
+  automatic = false;
+  pause = false;
   Serial.begin(9600); // Starts the serial communication
   Serial2.begin(9600);
   Serial2.setTimeout(3); //this sets the timeout for Serial.readBytesUntil(), Serial.readBytes(), Serial.parseInt() or Serial.parseFloat() methods.
-  //---------------HC-SR04---------------\\
+  //---------------HC-SR04---------------//
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   double duration;
   double distance;
-  //---------------Motors---------------\\
+  //---------------Motors---------------//
   pinMode(in1,OUTPUT);
   pinMode(in2,OUTPUT);
   pinMode(in3,OUTPUT);
@@ -65,49 +67,53 @@ void setup() {
   analogWrite(ENA, 255);
   analogWrite(ENB, 255);
   
-  //---------------GPS---------------\\
+  //---------------GPS---------------//
   GPS.begin(9600);
-  //---------------ESP---------------\\
+  //---------------ESP---------------//
   initESP();
   delay(400);
   Serial.println("\nParsing incoming data:\n");
-  //----------------Servo------------\\
+  //----------------Servo------------//
   sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
-  //---------------Transmission Mode---------------\\
-  transMode = 0;
 }
 
 void loop() {
- // parseReceiveString(receiveMessage(Serial, Serial2), Serial, Serial2);
-  //constantly writing out a pwm at 255 to enable the motors all the time
- // analogWrite(ENA, 255);
- // analogWrite(ENB, 255);
-  //moveServo(90);
-  getSonar();
-  delay(200);
+  commandReceived = parseReceiveString(receiveMessage());
+  if(!pause){
+    analogWrite(ENA, 255);
+    analogWrite(ENB, 255);
+  
+    
+    //getSonar();
+    //delay(200);
+    while(automatic){
+      parseReceiveString(receiveMessage());
+      //doAutoThings();
+    }
+  }
 }
 
 
-//---------------Communication Functions---------------\\
+//---------------Communication Functions---------------//
 
-String receiveMessage(HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
-  lastMessageReceived;           //resets the global variable to be an empty string
-  lastMessageReceived = serialFromESP.readStringUntil('\n');
+String receiveMessage(){
+  lastMessageReceived = "";           //resets the global variable to be an empty string
+  lastMessageReceived = Serial2.readStringUntil('\n');
   return lastMessageReceived;
 }
 
-void sendMessage(String message, HardwareSerial &serialToESP){
+void sendMessage(String message){
   String customCIPSend;
   customCIPSend = cipSend + message.length();   //cipSend is "AT+CIPSEND=0," So we need to add message length
   customCIPSend += crlf;
   message += crlf;
   
   for(int j = 0; j < customCIPSend.length()-1; j++){
-    serialToESP.write(customCIPSend[j]);
+    Serial2.write(customCIPSend[j]);
   }
   
   for(int i = 0; i < message.length()-1; i++){
-    serialToESP.write(message[i]);
+    Serial2.write(message[i]);
   }
 }
 
@@ -131,7 +137,7 @@ String trimString(String toTrim){  //Trims the header data off of the received m
   return trimmedString;
 }
 
-String parseReceiveString(String messageReceived, HardwareSerial &serialToMonitor, HardwareSerial &serialFromESP){
+String parseReceiveString(String messageReceived){
   String receivedCommand;
   if(messageReceived.length() > 5){
     messageReceived = trimString(messageReceived);
@@ -153,28 +159,32 @@ String parseReceiveString(String messageReceived, HardwareSerial &serialToMonito
     }else if(receivedCommand.equals("DNT")){     //Case 6: doDonuts = true;
           roverDoDonuts();
     }else if(receivedCommand.equals("LOC")){     //Case 7: Send back GPS coordinates to the computer
-          sendMessage(getGPSData(), Serial2);
-    }else if(receivedCommand.equals("PSE")){     //Case 8: Empty Case; Reserved
-          
-    }else if(receivedCommand.equals("RES")){     //Case 9: Empty Case; Reserved
-      
-    }else if(receivedCommand.equals("MAN")){     //Case 10: Empty Case; Reserved
-          transMode = 0;
-    }else if(receivedCommand.equals("ATM")){     //Case 11: Empty Case; Reserved
-          transMode = 1;
-    }else if(receivedCommand.equals("RET")){     //Case 12: Empty Case; Reserved
+          sendMessage(getGPSData());
+    }else if(receivedCommand.equals("PSE")){     //Case 8: Pause the rover's movement
+          pause = true;
+    }else if(receivedCommand.equals("RES")){     //Case 9: Resume the rover's movement
+          pause = false;
+    }else if(receivedCommand.equals("MAN")){     //Case 10: Enables manual control, only if paused
+          if(pause){
+            automatic = false;
+          }
+    }else if(receivedCommand.equals("ATM")){     //Case 11: Enables automatic control, only if paused
+          if(pause){
+            automatic = true;
+          }
+    }else if(receivedCommand.equals("RET")){     //Case 12: Return to starting position
       
     }else if(receivedCommand.equals("RSV")){     //Case 13: Empty Case; Reserved
       
     }
   }
 
-  return firstThreeChars
+  return receivedCommand;
 }
 
-//---------------End Communication Functions---------------\\
+//---------------End Communication Functions---------------//
 
-//---------------Component Control Functions---------------\\
+//---------------Component Control Functions---------------//
 
 void moveServo(int angle){
   pos = angle;
@@ -252,10 +262,10 @@ void initESP() {
   Serial.println("\nESP initialization complete."); 
 }
 
-//---------------End Component Control Functions---------------\\
+//---------------End Component Control Functions---------------//
 
 
-//---------------Rover Movement Functions---------------\\
+//---------------Rover Movement Functions---------------//
 
 void roverMoveForward(){
   digitalWrite(in1,LOW);
@@ -306,6 +316,6 @@ void roverDoDonuts(){
   }
 }
 
-//---------------End Rover Movement Functions---------------\\
+//---------------End Rover Movement Functions---------------//
 
 
