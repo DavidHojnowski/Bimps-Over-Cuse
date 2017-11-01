@@ -1,3 +1,4 @@
+#include <Adafruit_GPS.h>
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
@@ -19,8 +20,8 @@
   int ENA = 2;
   int ENB = 3;
   //---------------GPS---------------//
-  const int rxPin = 3;
-  const int txPin = 1;
+  const int rxPin = 52; //may need to flip these 2 values
+  const int txPin = 53;
   //---------------SERVO---------------//
   Servo sonarServo;  //create servo objects to control servos; left
   int pos = 0;    //variable to store the servo position
@@ -41,7 +42,8 @@
   
   //PinNumInstantiations
   //---------------GPS---------------//
-  SoftwareSerial GPS (rxPin, txPin);
+  SoftwareSerial mySerial (rxPin, txPin);
+  Adafruit_GPS GPS(&mySerial); //create a GPS object using a SoftwearSerial object
   //---------------SERVO---------------//
   
 
@@ -68,7 +70,10 @@ void setup() {
   analogWrite(ENB, 255);
   
   //---------------GPS---------------//
-  GPS.begin(9600);
+  GPS.begin(9600); //intialize serial at a baud rate of 9600
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+   // Set the update rate
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
   //---------------ESP---------------//
   initESP();
   delay(400);
@@ -78,6 +83,8 @@ void setup() {
 }
 
 void loop() {
+  getGPSData();
+  delay(2000);
   commandReceived = parseReceiveString(receiveMessage());
   if(!pause){
     analogWrite(ENA, 255);
@@ -194,12 +201,21 @@ void moveServo(int angle){
 
 String getGPSData(){
     String GPSData = ""; 
-    while(GPS.available())
-  {
-    char c = GPS.read();
-    GPSData += c;
-    Serial.print(c);
-  }
+    char c = GPS.read(); //may or may not need this
+    Serial.print("Fix:");
+    Serial.print((int)GPS.fix);
+    Serial.print(" quality");
+    Serial.println((int)GPS.fixquality);
+    if(GPS.fix){
+      Serial.print("Location: ");
+      Serial.print(GPS.latitude, 4); 
+      Serial.print(GPS.lat);
+      Serial.print(", "); 
+      Serial.print(GPS.longitude, 4); 
+      Serial.println(GPS.lon);
+      Serial.print("Angle: "); 
+      Serial.println(GPS.angle);
+    }
   return GPSData;
 }
 
