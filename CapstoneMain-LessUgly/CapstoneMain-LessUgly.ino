@@ -80,11 +80,14 @@ void setup() {
   Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------//
   sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
+  moveServo(90);  
 }
 
 void loop() {
   getGPSData();
+
   delay(2000);
+  /*
   commandReceived = parseReceiveString(receiveMessage());
   if(!pause){
     analogWrite(ENA, 255);
@@ -97,7 +100,7 @@ void loop() {
       parseReceiveString(receiveMessage());
       //doAutoThings();
     }
-  }
+  }*/
 }
 
 
