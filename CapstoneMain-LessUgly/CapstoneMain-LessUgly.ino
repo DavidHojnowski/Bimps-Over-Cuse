@@ -71,9 +71,9 @@ void setup() {
   
   //---------------GPS---------------//
   GPS.begin(9600); //intialize serial at a baud rate of 9600
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+ // GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
    // Set the update rate
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
+ // GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
   //---------------ESP---------------//
   initESP();
   delay(400);
@@ -206,8 +206,8 @@ String getGPSData(){
     String GPSData = ""; 
     char c = GPS.read(); //may or may not need this
     Serial.print("Fix:");
-    Serial.print((int)GPS.fix);
-    Serial.print(" quality");
+    Serial.print(GPS.fix);
+    Serial.print(" quality: ");
     Serial.println((int)GPS.fixquality);
     if(GPS.fix){
       Serial.print("Location: ");

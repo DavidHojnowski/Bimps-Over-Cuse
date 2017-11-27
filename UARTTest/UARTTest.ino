@@ -1,13 +1,14 @@
 #include <SoftwareSerial.h>
 
-const byte rxPin = 3;
-const byte txPin = 1;
+const byte rxPin = 52;
+const byte txPin = 53;
 
 // set up a GPS object
 SoftwareSerial GPS (rxPin, txPin);
 
+
 void setup() {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   
   GPS.begin(9600);
 }
