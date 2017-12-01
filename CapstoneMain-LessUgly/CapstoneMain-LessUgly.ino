@@ -1,9 +1,10 @@
 #include <Adafruit_GPS.h>
 #include <Servo.h>
+#include <Math.h>
 
 
 
-  //Pin assignments and Global Variables
+  //---------------Pin assignments and Global Variables---------------//
   //---------------HC-SR04 Sonar---------------//
   const int trigPin = 22;
   const int echoPin = 24;
@@ -25,26 +26,30 @@
   const int txPin = 53;
   double initialCoordsLat = 0000.00;  //initial Latitude of our rover
   double initialCoordsLong = 0000.00; //initial Longitude of our rover
-  double finalCoordsLat;  //destination latitude
-  double finalCoordsLong; //destination longitude
+  double finalCoordsLat = 0000.00;  //destination latitude
+  double finalCoordsLong = 0000.00; //destination longitude
+  double angleTowardDest = 0.0;
+  double angleRoverIsFacing = 0.0;
   boolean initialCoordsSet;
-  uint32_t timer = millis();
   #define GPSECHO false
   #define GPSSerial Serial3
   Adafruit_GPS GPS(&GPSSerial);
   //---------------SERVO---------------//
   Servo sonarServo;  //create servo objects to control servos; left
   int pos = 0;    //variable to store the servo position
-  //---------------Global---------------//
+  //---------------COMMUNICATION---------------//
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
   const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
   const String crlf = "\r\n";
+  String commandReceived;
+
+  //---------------MISC Globals---------------//
   #define pi   3.14159265358979323846264338327950288
   boolean automatic = false;
   boolean pause = false;
-  String commandReceived;
+  uint32_t timer = millis();
 
-  //EndPinDefinitions;
+  //---------------End Pin assignments and Global Variables---------------//
   
 
 void setup() {
@@ -90,6 +95,7 @@ void loop() {
   if(!initialCoordsSet){  //this line is saying check GPS until we get our initial coords, then move on. Otherwise, we get timing issues.
   getGPSData();
   }else{
+    angleTowardDest = determineNeededRoverDirection();
     commandReceived = parseReceiveString(receiveMessage());
     if(!pause){
       analogWrite(ENA, 255);
@@ -97,7 +103,8 @@ void loop() {
       //getSonar();
       while(automatic){
         parseReceiveString(receiveMessage());
-        //doAutoThings();
+        while((
+        if(getSonar < 50)
       }
     }
   }
@@ -105,7 +112,12 @@ void loop() {
 
 
 //---------------Mathematics Functions---------------//
-
+double determineNeededRoverDirection(){
+  double differenceLat = finalCoordsLat - initialCoordsLat;
+  double differenceLong = cos(pi / 180 * initialCoordsLat) * (finalCoordsLong - initialCoordsLong; //the reason this isnt just final - initial is because longitude is weird and has to be scaled by lat
+  double angleNeeded = atan2(differenceLong, differenceLat)
+  return angleNeeded;
+}
 
 
 //---------------End Mathematics Functions---------------//
@@ -220,7 +232,7 @@ void getGPSData(){
   if (GPS.newNMEAreceived()) {
     // a tricky thing here is if we print the NMEA sentence, or data
     // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
+    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
     Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
     if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
       return; // we can fail to parse a sentence in which case we should just wait for another
@@ -249,14 +261,14 @@ void getGPSData(){
       Serial.print("Angle: "); Serial.println(GPS.angle);
       Serial.print("Altitude: "); Serial.println(GPS.altitude);
       Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
-      if(initialCoordsLong > 0.0){
+      if(initialCoordsLat > 0.0){
         initialCoordsSet = true;
       }
     }
   }
 }
 
-void getSonar(){
+double getSonar(){
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -275,6 +287,7 @@ void getSonar(){
   // Prints the distance on the Serial Monitor
   Serial.print("Distance: ");
   Serial.println(distance);
+  return distance;
 }
 
 void initESP() {
@@ -319,6 +332,14 @@ void initESP() {
 
 
 //---------------Rover Movement Functions---------------//
+
+void roverFaceTowardDestination(){
+  int count = 1000;
+  while(count > 0){
+    roverMoveForward();
+    count--;
+  }
+}
 
 void roverMoveForward(){
   digitalWrite(in1,LOW);
