@@ -135,7 +135,7 @@ void sendMessage(String message){
 }
 
 String trimString(String toTrim){  //Trims the header data off of the received messages
-  int posInString = 0;  //Since we know the message will have "+IPD=x,y:" we can just jump it further into our string to speed it up a bit
+  int posInString = 0;  //Since we know the message will have "+IPD=x,y:"
   int colonPos;
   int toTrimLength = toTrim.length();
   String trimmedString = "";
