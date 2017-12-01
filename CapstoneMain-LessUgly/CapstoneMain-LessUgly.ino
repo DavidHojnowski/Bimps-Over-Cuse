@@ -1,13 +1,14 @@
 #include <Adafruit_GPS.h>
 #include <Servo.h>
-#include <SoftwareSerial.h>
 
 
 
-  //PinNumDefinitions:
-  //---------------HC-SR04---------------//
+  //Pin assignments and Global Variables
+  //---------------HC-SR04 Sonar---------------//
   const int trigPin = 22;
   const int echoPin = 24;
+   long duration;
+  int distance;
   //------------Pins for 4 motors-----------------//
   //4 pins two for each channel
   //left motors
@@ -22,6 +23,15 @@
   //---------------GPS---------------//
   const int rxPin = 52; //may need to flip these 2 values
   const int txPin = 53;
+  double initialCoordsLat = 0000.00;  //initial Latitude of our rover
+  double initialCoordsLong = 0000.00; //initial Longitude of our rover
+  double finalCoordsLat;  //destination latitude
+  double finalCoordsLong; //destination longitude
+  boolean initialCoordsSet;
+  uint32_t timer = millis();
+  #define GPSECHO false
+  #define GPSSerial Serial3
+  Adafruit_GPS GPS(&GPSSerial);
   //---------------SERVO---------------//
   Servo sonarServo;  //create servo objects to control servos; left
   int pos = 0;    //variable to store the servo position
@@ -29,22 +39,12 @@
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
   const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
   const String crlf = "\r\n";
-  long duration;
-  int distance;
-  boolean automatic;
-  boolean pause;
+  #define pi   3.14159265358979323846264338327950288
+  boolean automatic = false;
+  boolean pause = false;
   String commandReceived;
+
   //EndPinDefinitions;
-  
-  
-  
-  
-  
-  //PinNumInstantiations
-  //---------------GPS---------------//
-  SoftwareSerial mySerial (rxPin, txPin);
-  Adafruit_GPS GPS(&mySerial); //create a GPS object using a SoftwearSerial object
-  //---------------SERVO---------------//
   
 
 void setup() {
@@ -71,9 +71,12 @@ void setup() {
   
   //---------------GPS---------------//
   GPS.begin(9600); //intialize serial at a baud rate of 9600
- // GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
    // Set the update rate
- // GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
+  getGPSData();
+  initialCoordsLat = GPS.latitude;
+  initialCoordsLong = GPS.longitude;
   //---------------ESP---------------//
   initESP();
   delay(400);
@@ -84,24 +87,28 @@ void setup() {
 }
 
 void loop() {
+  if(!initialCoordsSet){  //this line is saying check GPS until we get our initial coords, then move on. Otherwise, we get timing issues.
   getGPSData();
-
-  delay(2000);
-  /*
-  commandReceived = parseReceiveString(receiveMessage());
-  if(!pause){
-    analogWrite(ENA, 255);
-    analogWrite(ENB, 255);
-  
-    
-    //getSonar();
-    //delay(200);
-    while(automatic){
-      parseReceiveString(receiveMessage());
-      //doAutoThings();
+  }else{
+    commandReceived = parseReceiveString(receiveMessage());
+    if(!pause){
+      analogWrite(ENA, 255);
+      analogWrite(ENB, 255);
+      //getSonar();
+      while(automatic){
+        parseReceiveString(receiveMessage());
+        //doAutoThings();
+      }
     }
-  }*/
+  }
 }
+
+
+//---------------Mathematics Functions---------------//
+
+
+
+//---------------End Mathematics Functions---------------//
 
 
 //---------------Communication Functions---------------//
@@ -169,22 +176,21 @@ String parseReceiveString(String messageReceived){
     }else if(receivedCommand.equals("DNT")){     //Case 6: doDonuts = true;
           roverDoDonuts();
     }else if(receivedCommand.equals("LOC")){     //Case 7: Send back GPS coordinates to the computer
-          sendMessage(getGPSData());
-    }else if(receivedCommand.equals("PSE")){     //Case 8: Pause the rover's movement
-          pause = true;
-    }else if(receivedCommand.equals("RES")){     //Case 9: Resume the rover's movement
-          pause = false;
-    }else if(receivedCommand.equals("MAN")){     //Case 10: Enables manual control, only if paused
+          //sendMessage(initialCoordsLat);
+          //sendMessage(initialCoordsLong);
+    }else if(receivedCommand.equals("PSE")){     //Case 8: Pause/Unpause the rover's movement
+          pause = !pause;
+    }else if(receivedCommand.equals("MAN")){     //Case 9: Enables manual control, only if paused
           if(pause){
             automatic = false;
           }
-    }else if(receivedCommand.equals("ATM")){     //Case 11: Enables automatic control, only if paused
+    }else if(receivedCommand.equals("ATM")){     //Case 10: Enables automatic control, only if paused
           if(pause){
             automatic = true;
           }
-    }else if(receivedCommand.equals("RET")){     //Case 12: Return to starting position
+    }else if(receivedCommand.equals("RET")){     //Case 11: Return to starting position
       
-    }else if(receivedCommand.equals("RSV")){     //Case 13: Empty Case; Reserved
+    }else if(receivedCommand.equals("RSV")){     //Case 12: Empty Case; Reserved
       
     }
   }
@@ -194,6 +200,8 @@ String parseReceiveString(String messageReceived){
 
 //---------------End Communication Functions---------------//
 
+
+
 //---------------Component Control Functions---------------//
 
 void moveServo(int angle){
@@ -202,24 +210,50 @@ void moveServo(int angle){
   delay(15);                         //waits 15ms for the servo to reach the position
 }
 
-String getGPSData(){
-    String GPSData = ""; 
-    char c = GPS.read(); //may or may not need this
-    Serial.print("Fix:");
-    Serial.print(GPS.fix);
-    Serial.print(" quality: ");
-    Serial.println((int)GPS.fixquality);
-    if(GPS.fix){
+void getGPSData(){
+  // read data from the GPS in the 'main loop'
+  char c = GPS.read();
+  // if you want to debug, this is a good time to do it!
+  if (GPSECHO)
+    if (c) Serial.print(c);
+  // if a sentence is received, we can check the checksum, parse it...
+  if (GPS.newNMEAreceived()) {
+    // a tricky thing here is if we print the NMEA sentence, or data
+    // we end up not listening and catching other sentences!
+    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
+    Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
+    if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
+      return; // we can fail to parse a sentence in which case we should just wait for another
+  }
+  // if millis() or timer wraps around, we'll just reset it
+  if (timer > millis()) timer = millis();
+     
+  // approximately every 2 seconds or so, print out the current stats
+  if (millis() - timer > 2000) {
+    timer = millis(); // reset the timer
+    Serial.print("\nTime: ");
+    Serial.print(GPS.hour, DEC); Serial.print(':');
+    Serial.print(GPS.minute, DEC); Serial.print(':');
+    Serial.print(GPS.seconds, DEC); Serial.print('.');
+    Serial.println(GPS.milliseconds);
+    Serial.print("Fix: "); Serial.print((int)GPS.fix);
+    Serial.print(" quality: "); Serial.println((int)GPS.fixquality);
+    if (GPS.fix) {
       Serial.print("Location: ");
-      Serial.print(GPS.latitude, 4); 
-      Serial.print(GPS.lat);
-      Serial.print(", "); 
-      Serial.print(GPS.longitude, 4); 
-      Serial.println(GPS.lon);
-      Serial.print("Angle: "); 
-      Serial.println(GPS.angle);
+      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+      initialCoordsLat = GPS.latitude;
+      Serial.print(", ");
+      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+      initialCoordsLong = GPS.longitude;
+      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
+      Serial.print("Angle: "); Serial.println(GPS.angle);
+      Serial.print("Altitude: "); Serial.println(GPS.altitude);
+      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
+      if(initialCoordsLong > 0.0){
+        initialCoordsSet = true;
+      }
     }
-  return GPSData;
+  }
 }
 
 void getSonar(){
