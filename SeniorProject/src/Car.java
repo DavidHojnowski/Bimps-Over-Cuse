@@ -14,6 +14,8 @@ public class Car {
 	private boolean right;//if true the car is moving right
 	//left and right should not both be true
 	private boolean moving;//if true if the car is moving else the car is stoped
+	//This boolean tells us if it's beining manually controlled or atomtic
+	private boolean manual; //if true then we are in manual mode
 	
 	public Car(){
 		//speed = ?? to do find some intial value for speed
@@ -21,7 +23,8 @@ public class Car {
 		bckwd = false;
 		left = false;
 		right = false;
-		moving = false;		
+		moving = false;	
+		manual = true;
 	}
 	
 	//Call this method when the car is breaking or not moving
@@ -63,7 +66,10 @@ public class Car {
 	
 	//call this method when the car is now going left
 	public void goLeft(){
+		//set all other direstions to false
 		right = false;//we want to make sure right is false when left is true
+		fwd = false;
+		bckwd = false;
 		left = true;
 		updateMoving();
 	}
@@ -83,6 +89,8 @@ public class Car {
 	//When this method is called the car is going right
 	public void goRight(){
 		left = false;//can not begoing both left and right at the same time
+		fwd = false;
+		bckwd = false;
 		right = true;
 		updateMoving();
 	}
@@ -97,6 +105,9 @@ public class Car {
 	}
 	
 	public void goFwd(){
+		//set all other directions to false
+		right = false;
+		left = false;
 		bckwd = false;
 		fwd = true;
 		updateMoving();
@@ -113,6 +124,9 @@ public class Car {
 	}
 	
 	public void goBckwd(){
+		//set all other directions to false
+		right = false;
+		left = false;
 		fwd = false;
 		bckwd = true;
 		updateMoving();
@@ -129,6 +143,17 @@ public class Car {
 	
 	public boolean getMoving(){
 		return moving;
+	}
+	
+	public void setToManual(){
+		manual = true;
+	}
+	public void setToAtomatic(){
+		manual = false;
+	}
+	
+	public boolean getManual(){
+		return manual;
 	}
 	
 	

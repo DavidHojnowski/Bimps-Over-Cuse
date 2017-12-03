@@ -1,7 +1,9 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-public class Controller implements KeyListener{
+public class Controller implements KeyListener, ActionListener{
 	//We implement keylistner becuase the key listner is going to be the main driver of the controller
 
 	View view;
@@ -13,12 +15,22 @@ public class Controller implements KeyListener{
 	private static final int DOWN =40;
 	private static final int LEFT = 37;
 	private static final int RIGHT = 39;
+	private static final int ESCAPE = 27;
+	
+	//Strings for the action commands 
+	//Each string represents a different button being clicked
+	public final String DONUTBUTTON = "DONUT";
+	public final String LOCBUTTON = "LOC";
+	public final String MANBUTTON = "MAN";
+	public final String AUTOBUTTON = "ATM";
+	public final String RETBUTTON = "RET";
 	
 	//booleans to indicate wheter a button is curently being pressed
 	private boolean upPressed;
 	private boolean downPressed;
 	private boolean leftPressed;
 	private boolean rightPressed;
+	private boolean escapePressed;
 	
 	
 	public Controller(){
@@ -29,6 +41,7 @@ public class Controller implements KeyListener{
 		downPressed = false;
 		leftPressed = false;
 		rightPressed = false;
+		escapePressed =  false;
 
 	}
 	
@@ -65,28 +78,37 @@ public class Controller implements KeyListener{
 			case UP:
 				if(!upPressed){
 					carControl.keyPressed(Keys.UPARROW);
+					upPressed = true;
 				}
-				upPressed = true;
+
 				break;
 			case DOWN:
 				if(!downPressed){
 					carControl.keyPressed(Keys.DOWNARROW);
+					downPressed = true;
 				}
-				downPressed = true;
+
 				break;
 				
 			case LEFT:
 				if(!leftPressed){
 					carControl.keyPressed(Keys.LEFTARROW);
+					leftPressed = true;
 				}
-				leftPressed = true;
+
 				break;
 				
 			case RIGHT:
 				if(!rightPressed){
 					carControl.keyPressed(Keys.RIGHTARROW);
+					rightPressed = true;
 				}
-				rightPressed = true;
+				break;
+			case ESCAPE:
+				if(!escapePressed){ //yes we do need to know if the key is down even for escape
+					carControl.keyPressed(Keys.ESCAPE);
+					escapePressed = true;
+				}
 				break;
 			default:
 				//do something key pressed that we don't care about
@@ -115,12 +137,41 @@ public class Controller implements KeyListener{
 				rightPressed = false;
 				carControl.keyReleased(Keys.RIGHTARROW);
 				break;
+			case ESCAPE:
+				escapePressed = false;
 			default:
 				//may need to do something when keys we dont care about are relased
 				break;
 				
 			
 		}
+		
+	}
+
+	//this method handles buttons being pressed on the screen
+	public void actionPerformed(ActionEvent arg0) {
+		if(arg0.getActionCommand().equals(DONUTBUTTON)){
+			carControl.doDonuts();
+		}
+		else if(arg0.getActionCommand().equals(LOCBUTTON)){
+			carControl.location();
+		}
+		else if(arg0.getActionCommand().equals(MANBUTTON)){
+			carControl.setManual();
+			view.dispManualMode(); //update the view to indicate in manual mode
+		}
+		else if(arg0.getActionCommand().equals(AUTOBUTTON)){
+			carControl.setAutomatic();
+			view.dispAutoMode(); //update the view to indicate in automatic mode
+		}
+		else if(arg0.getActionCommand().equals(RETBUTTON)){
+			carControl.returnBack();
+		}
+		else{
+			//do nothing
+		}
+		
+		
 		
 	}
 }

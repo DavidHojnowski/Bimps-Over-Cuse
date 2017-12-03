@@ -1,0 +1,51 @@
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+public class View {
+	private MyFrame test; //this is gunna be the frame or the window that we draw in
+	
+	public View(Controller c){
+		//This tells the frame the dimensions to close on exit and make it visible
+		//the location of this code may change but for right now we will call it from here 
+		MyFrame test = new MyFrame(c);
+		test.setSize(600,600);
+		test.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//first add a panel to add buttons to
+		JPanel myPanel = new JPanel();
+		
+		//DoDuntus button-----------------
+		JButton donutButton = new JButton("Do Donuts");
+		//add the action string
+		donutButton.setActionCommand(c.DONUTBUTTON);
+		//add a listner to the button using the controller so we can detect in the controller
+		donutButton.addActionListener(c);
+		
+		//GetLocation Button-----------------------
+		JButton locationButton = new JButton("Get Location");
+		
+		//Manual Button------------------------------
+		JButton manButton = new JButton("Set to Manual mode");
+		manButton.setEnabled(false); //intially were in manual mode so we disbale this button
+		
+		//Atomatic Button---------------------------------
+		JButton autoButton =  new JButton("Set to Automatic mode");
+		
+		
+		
+		//add buttons to the panel
+		myPanel.add(donutButton);
+		myPanel.add(locationButton);
+		myPanel.add(manButton);
+		myPanel.add(autoButton);
+		
+		//add the panel to the frame
+		test.getContentPane().add(myPanel);
+		
+
+		//test.pack();
+		test.setVisible(true);
+	
+	}
+	
+}

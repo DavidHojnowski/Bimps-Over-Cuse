@@ -3,6 +3,7 @@ public enum Keys {
 	UPARROW,
 	DOWNARROW,
 	LEFTARROW,
-	RIGHTARROW;
+	RIGHTARROW,
+	ESCAPE;
 
 }

@@ -19,5 +19,8 @@ public interface ModelInterface {
 	public void stopBckWd();
 	public boolean goingBckWd();
 	public boolean isMoving();
+	public boolean inManual();
+	public void setManual();
+	public void setAutomatic();
 
 }

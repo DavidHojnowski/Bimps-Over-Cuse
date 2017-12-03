@@ -126,6 +126,26 @@ public class Model implements ModelInterface{
 	public boolean isMoving() {
 		return ourCar.getMoving();
 	}
+
+
+	@Override
+	public boolean inManual() {
+		return ourCar.getManual();
+	}
+
+
+	@Override
+	public void setManual() {
+		ourCar.setToManual();
+		
+	}
+
+
+	@Override
+	public void setAutomatic() {
+		ourCar.setToManual();
+		
+	}
 	
 	
 }

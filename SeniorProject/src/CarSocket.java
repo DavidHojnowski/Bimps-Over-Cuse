@@ -45,9 +45,7 @@ public class CarSocket {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		finally{
-			return result;
-		}
+		return result;
 	}
 	
 	
