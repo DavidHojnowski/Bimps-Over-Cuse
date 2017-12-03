@@ -24,10 +24,10 @@
   //---------------GPS---------------//
   const int rxPin = 52; //may need to flip these 2 values
   const int txPin = 53;
-  double initialCoordsLat = 0000.00;  //initial Latitude of our rover
-  double initialCoordsLong = 0000.00; //initial Longitude of our rover
-  double finalCoordsLat = 0000.00;  //destination latitude
-  double finalCoordsLong = 0000.00; //destination longitude
+  double initialCoordsLat = 00.00;  //initial Latitude of our rover
+  double initialCoordsLong = 00.00; //initial Longitude of our rover
+  double finalCoordsLat = 43.049272;  //destination latitude
+  double finalCoordsLong = -76.087518; //destination longitude
   double angleTowardDest = 0.0;
   double angleRoverIsFacing = 0.0;
   boolean initialCoordsSet;
@@ -41,14 +41,13 @@
   String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
   const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
   const String crlf = "\r\n";
-  String commandReceived;
 
   //---------------MISC Globals---------------//
   #define pi   3.14159265358979323846264338327950288
   boolean automatic = false;
   boolean pause = false;
   uint32_t timer = millis();
-
+  int count = 0;
   //---------------End Pin assignments and Global Variables---------------//
   
 
@@ -79,9 +78,9 @@ void setup() {
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
    // Set the update rate
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
-  getGPSData();
   initialCoordsLat = GPS.latitude;
   initialCoordsLong = GPS.longitude;
+  getGPSData();
   //---------------ESP---------------//
   initESP();
   delay(400);
@@ -89,22 +88,24 @@ void setup() {
   //----------------Servo------------//
   sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
   moveServo(90);  
+
+
 }
 
 void loop() {
-  if(!initialCoordsSet){  //this line is saying check GPS until we get our initial coords, then move on. Otherwise, we get timing issues.
-  getGPSData();
-  }else{
-    angleTowardDest = determineNeededRoverDirection();
-    commandReceived = parseReceiveString(receiveMessage());
-    if(!pause){
-      analogWrite(ENA, 255);
-      analogWrite(ENB, 255);
-      //getSonar();
-      while(automatic){
+  parseReceiveString(receiveMessage());
+  if(!pause){
+    while(automatic){
+      parseReceiveString(receiveMessage());
+      
+      roverFaceTowardDestination();
+      Serial.println("rip in peps?");
+      while(getSonar() > 50){
         parseReceiveString(receiveMessage());
-        while((
-        if(getSonar < 50)
+        analogWrite(ENA, 255);
+        analogWrite(ENB, 255);
+        roverMoveForward();
+        Serial.println("hey lmao I did it!!!");
       }
     }
   }
@@ -114,12 +115,19 @@ void loop() {
 //---------------Mathematics Functions---------------//
 double determineNeededRoverDirection(){
   double differenceLat = finalCoordsLat - initialCoordsLat;
-  double differenceLong = cos(pi / 180 * initialCoordsLat) * (finalCoordsLong - initialCoordsLong; //the reason this isnt just final - initial is because longitude is weird and has to be scaled by lat
-  double angleNeeded = atan2(differenceLong, differenceLat)
+  double differenceLong = cos(pi / 180 * initialCoordsLat) * (finalCoordsLong - initialCoordsLong); //the reason this isnt just final - initial is because longitude is weird and has to be scaled by lat
+  double angleNeeded = atan2(differenceLong, differenceLat);
   return angleNeeded;
 }
 
-
+double convertToDecDegFromDecMin(double decMinsCoord){
+  double decDegsCoord = 0.0;
+  int numDegrees = decMinsCoord / 100;
+  double minutes = decMinsCoord - (numDegrees*100);
+  minutes = minutes/60.0;
+  decDegsCoord = numDegrees + minutes;
+  return decDegsCoord;
+}
 //---------------End Mathematics Functions---------------//
 
 
@@ -134,16 +142,12 @@ String receiveMessage(){
 void sendMessage(String message){
   String customCIPSend;
   customCIPSend = cipSend + message.length();   //cipSend is "AT+CIPSEND=0," So we need to add message length
-  customCIPSend += crlf;
-  message += crlf;
-  
-  for(int j = 0; j < customCIPSend.length()-1; j++){
-    Serial2.write(customCIPSend[j]);
-  }
-  
-  for(int i = 0; i < message.length()-1; i++){
-    Serial2.write(message[i]);
-  }
+  Serial2.println();
+  delay(100);
+  Serial2.println(customCIPSend);
+  delay(100);
+  Serial2.println(message);
+  delay(100);
 }
 
 String trimString(String toTrim){  //Trims the header data off of the received messages
@@ -168,12 +172,14 @@ String trimString(String toTrim){  //Trims the header data off of the received m
 
 String parseReceiveString(String messageReceived){
   String receivedCommand;
+ // Serial.println(messageReceived);
   if(messageReceived.length() > 5){
     messageReceived = trimString(messageReceived);
     
     receivedCommand = messageReceived[0];
     receivedCommand += messageReceived[1];
     receivedCommand += messageReceived[2];
+    //Serial.print(receivedCommand);
 
           if(receivedCommand.equals("LFT")){     //Case 1: Left (Might be preset turn or maybe we accept an angle and translate it to how to turn wheels to the left)
             roverTurnLeft();
@@ -188,18 +194,13 @@ String parseReceiveString(String messageReceived){
     }else if(receivedCommand.equals("DNT")){     //Case 6: doDonuts = true;
           roverDoDonuts();
     }else if(receivedCommand.equals("LOC")){     //Case 7: Send back GPS coordinates to the computer
-          //sendMessage(initialCoordsLat);
-          //sendMessage(initialCoordsLong);
+          sendLocation();
     }else if(receivedCommand.equals("PSE")){     //Case 8: Pause/Unpause the rover's movement
           pause = !pause;
-    }else if(receivedCommand.equals("MAN")){     //Case 9: Enables manual control, only if paused
-          if(pause){
+    }else if(receivedCommand.equals("MAN")){     //Case 9: Enables manual control
             automatic = false;
-          }
-    }else if(receivedCommand.equals("ATM")){     //Case 10: Enables automatic control, only if paused
-          if(pause){
+    }else if(receivedCommand.equals("ATM")){     //Case 10: Enables automatic control
             automatic = true;
-          }
     }else if(receivedCommand.equals("RET")){     //Case 11: Return to starting position
       
     }else if(receivedCommand.equals("RSV")){     //Case 12: Empty Case; Reserved
@@ -208,6 +209,18 @@ String parseReceiveString(String messageReceived){
   }
 
   return receivedCommand;
+}
+
+void sendLocation(){
+  char tempLat[8];
+  char tempLong[8];
+  // dtostrf( [doubleVar] , [sizeBeforePoint] , [sizeAfterPoint] , [WhereToStoreIt] )
+  dtostrf(initialCoordsLat, 4, 2, tempLat);
+  dtostrf(initialCoordsLong*-1, 4, 2, tempLong);
+  String latitude = String(tempLat);
+  String longitude = String(tempLong);
+  String formatForSend = latitude + "N, " + longitude + "W";
+  sendMessage(formatForSend);
 }
 
 //---------------End Communication Functions---------------//
@@ -221,6 +234,7 @@ void moveServo(int angle){
   sonarServo.write(pos);              //tell servo to go to position in variable 'pos'
   delay(15);                         //waits 15ms for the servo to reach the position
 }
+
 
 void getGPSData(){
   // read data from the GPS in the 'main loop'
@@ -253,10 +267,10 @@ void getGPSData(){
     if (GPS.fix) {
       Serial.print("Location: ");
       Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-      initialCoordsLat = GPS.latitude;
+      initialCoordsLat = convertToDecDegFromDecMin(GPS.latitude);
       Serial.print(", ");
       Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      initialCoordsLong = GPS.longitude;
+      initialCoordsLong = convertToDecDegFromDecMin(GPS.longitude) * -1;
       Serial.print("Speed (knots): "); Serial.println(GPS.speed);
       Serial.print("Angle: "); Serial.println(GPS.angle);
       Serial.print("Altitude: "); Serial.println(GPS.altitude);
@@ -334,10 +348,29 @@ void initESP() {
 //---------------Rover Movement Functions---------------//
 
 void roverFaceTowardDestination(){
-  int count = 1000;
-  while(count > 0){
+  initialCoordsSet = false;
+  while(!initialCoordsSet){
+    getGPSData();
+   }
+  int count = 1000;//THIS LINE WILL LIKELY NEED SOME REFINING
+  while(count > 0){//THIS LINE WILL LIKELY NEED SOME REFINING
     roverMoveForward();
     count--;
+  }
+  initialCoordsSet = false;
+  while(!initialCoordsSet){
+    getGPSData();
+  }
+  angleRoverIsFacing = GPS.angle;
+  angleTowardDest = determineNeededRoverDirection();
+
+  if((angleRoverIsFacing + 45) > angleTowardDest && (angleRoverIsFacing - 45) < angleTowardDest){
+    //we're good
+  }else{
+    for(int i = 0; i < 300; i++){//THIS LINE WILL LIKELY NEED SOME REFINING
+    roverTurnRight();
+    }
+    roverFaceTowardDestination();
   }
 }
 
