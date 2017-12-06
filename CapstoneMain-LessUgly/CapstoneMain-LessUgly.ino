@@ -48,6 +48,7 @@
   boolean pause = false;
   uint32_t timer = millis();
   int count = 0;
+  boolean facingCorrectDirection = false;
   //---------------End Pin assignments and Global Variables---------------//
   
 
@@ -97,15 +98,12 @@ void loop() {
   if(!pause){
     while(automatic){
       parseReceiveString(receiveMessage());
-      
       roverFaceTowardDestination();
-      Serial.println("rip in peps?");
       while(getSonar() > 50){
         parseReceiveString(receiveMessage());
         analogWrite(ENA, 255);
         analogWrite(ENB, 255);
         roverMoveForward();
-        Serial.println("hey lmao I did it!!!");
       }
     }
   }
@@ -348,29 +346,34 @@ void initESP() {
 //---------------Rover Movement Functions---------------//
 
 void roverFaceTowardDestination(){
-  initialCoordsSet = false;
-  while(!initialCoordsSet){
-    getGPSData();
-   }
-  int count = 1000;//THIS LINE WILL LIKELY NEED SOME REFINING
-  while(count > 0){//THIS LINE WILL LIKELY NEED SOME REFINING
-    roverMoveForward();
-    count--;
-  }
-  initialCoordsSet = false;
-  while(!initialCoordsSet){
-    getGPSData();
-  }
-  angleRoverIsFacing = GPS.angle;
-  angleTowardDest = determineNeededRoverDirection();
-
-  if((angleRoverIsFacing + 45) > angleTowardDest && (angleRoverIsFacing - 45) < angleTowardDest){
-    //we're good
-  }else{
-    for(int i = 0; i < 300; i++){//THIS LINE WILL LIKELY NEED SOME REFINING
-    roverTurnRight();
+  while(automatic){
+    while(!facingCorrectDirection){
+      initialCoordsSet = false;
+      while(!initialCoordsSet){
+        getGPSData();
+       }
+      int count = 2500;//THIS LINE WILL LIKELY NEED SOME REFINING
+      while(count > 0){//THIS LINE WILL LIKELY NEED SOME REFINING
+        roverMoveForward();
+        count--;
+      }
+      initialCoordsSet = false;
+      while(!initialCoordsSet){
+        getGPSData();
+      }
+      angleRoverIsFacing = GPS.angle;
+      angleTowardDest = determineNeededRoverDirection();
+    
+      if((angleRoverIsFacing < (angleTowardDest + 45)) && ((angleRoverIsFacing) > (angleTowardDest - 45))){
+        facingCorrectDirection = true;
+      }else{
+        for(int i = 0; i < 300; i++){//THIS LINE WILL LIKELY NEED SOME REFINING
+        roverTurnRight();
+        }
+        Serial.println("Failed");
+        facingCorrectDirection = false;
+      }
     }
-    roverFaceTowardDestination();
   }
 }
 
