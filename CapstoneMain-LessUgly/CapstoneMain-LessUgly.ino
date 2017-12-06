@@ -104,6 +104,9 @@ void loop() {
         analogWrite(ENA, 255);
         analogWrite(ENB, 255);
         roverMoveForward();
+        if(!automatic){
+          break;
+        }
       }
     }
   }
@@ -373,6 +376,7 @@ void roverFaceTowardDestination(){
         Serial.println("Failed");
         facingCorrectDirection = false;
       }
+      parseReceiveString(receiveMessage());
     }
   }
 }
