@@ -3,19 +3,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-public class Controller implements KeyListener, ActionListener{
+public class Controller implements ControlInterface, ActionListener{
 	//We implement keylistner becuase the key listner is going to be the main driver of the controller
 
 	View view;
 	Model model;
 	CarController carControl;
 	
-	//The key codes for up, down, left, and right
-	private static final int UP=38;
-	private static final int DOWN =40;
-	private static final int LEFT = 37;
-	private static final int RIGHT = 39;
-	private static final int ESCAPE = 27;
 	
 	//Strings for the action commands 
 	//Each string represents a different button being clicked
@@ -52,101 +46,70 @@ public class Controller implements KeyListener, ActionListener{
 		
 	}
 	
-	@Override
-	public void keyPressed(KeyEvent arg0) {
-		
-		handleKeyPress(arg0.getKeyCode());
-	
-	}
-
-	@Override
-	public void keyReleased(KeyEvent arg0) {
-		handleKeyRelease(arg0.getKeyCode());
-	}
-
-	//Have to include this method here but probably will never use it 
-	@Override
-	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-		//System.out.println("Key Typed");
-		
-	}
-	
-	//this method then handles what to do once a key has been pressed
-	private void handleKeyPress(int keyCode){
-		switch(keyCode){
-			case UP:
-				if(!upPressed){
-					carControl.keyPressed(Keys.UPARROW);
-					upPressed = true;
-				}
-
-				break;
-			case DOWN:
-				if(!downPressed){
-					carControl.keyPressed(Keys.DOWNARROW);
-					downPressed = true;
-				}
-
-				break;
-				
-			case LEFT:
-				if(!leftPressed){
-					carControl.keyPressed(Keys.LEFTARROW);
-					leftPressed = true;
-				}
-
-				break;
-				
-			case RIGHT:
-				if(!rightPressed){
-					carControl.keyPressed(Keys.RIGHTARROW);
-					rightPressed = true;
-				}
-				break;
-			case ESCAPE:
-				if(!escapePressed){ //yes we do need to know if the key is down even for escape
-					carControl.keyPressed(Keys.ESCAPE);
-					escapePressed = true;
-				}
-				break;
-			default:
-				//do something key pressed that we don't care about
-				break;
-				
+	//Methods to handel the different key presses
+	public void upPressed(){
+		if(!upPressed){
+			carControl.keyPressed(Keys.UPARROW);
+			upPressed = true;
 		}
-		
 	}
 	
-	//this method handles what to do once a key has been relaseed
-	private void handleKeyRelease(int keyCode){
-		switch(keyCode){
-			case UP:
-				upPressed = false;
-				carControl.keyReleased(Keys.UPARROW);
-				break;
-			case DOWN:
-				downPressed = false;
-				carControl.keyReleased(Keys.DOWNARROW);
-				break;
-			case LEFT:
-				leftPressed = false;
-				carControl.keyReleased(Keys.LEFTARROW);
-				break;
-			case RIGHT:
-				rightPressed = false;
-				carControl.keyReleased(Keys.RIGHTARROW);
-				break;
-			case ESCAPE:
-				escapePressed = false;
-			default:
-				//may need to do something when keys we dont care about are relased
-				break;
-				
-			
-		}
-		
+	public void upReleased(){
+		upPressed = false;
+		carControl.keyReleased(Keys.UPARROW);
 	}
+	
+	public void downPressed(){
+		if(!downPressed){
+			carControl.keyPressed(Keys.DOWNARROW);
+			downPressed = true;
+		}
+	}
+	
+	public void downReleased(){
+		downPressed = false;
+		carControl.keyReleased(Keys.DOWNARROW);
+	}
+	
+	public void leftPressed(){
+		if(!leftPressed){
+			carControl.keyPressed(Keys.LEFTARROW);
+			leftPressed = true;
+		}
+	}
+	
+	public void leftReleased(){
+		leftPressed = false;
+		carControl.keyReleased(Keys.LEFTARROW);
+	}
+	
+	
+	public void rightPressed(){
+		if(!rightPressed){
+			carControl.keyPressed(Keys.RIGHTARROW);
+			rightPressed = true;
+		}
+	}
+	
+	public void rightReleased(){
+		rightPressed = false;
+		carControl.keyReleased(Keys.RIGHTARROW);
+
+	}
+	
+	public void escapePressed(){
+		if(!escapePressed){
+			carControl.keyPressed(Keys.ESCAPE);
+			escapePressed = true;
+		}
+	}
+	
+	public void escapeReleased(){
+		escapePressed = false;
+	}
+
+	
+	
 
 	//this method handles buttons being pressed on the screen
 	public void actionPerformed(ActionEvent arg0) {
@@ -170,8 +133,11 @@ public class Controller implements KeyListener, ActionListener{
 		else{
 			//do nothing
 		}
-		
+		//this method is important as it tells the view to make the frame focusable so the it will detect key presses
+		view.setKeyFocus();
 		
 		
 	}
+
+
 }

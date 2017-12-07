@@ -8,10 +8,15 @@ public class MyFrame extends JFrame{
 	
 	public MyFrame(Controller c){
 		//can call all three of these methods without issue becase we extend JFrame
-		addKeyListener(c); //this tells us that the key events will be picked up in the INputKeyListener class
+		//addKeyListener(c); //this tells us that the key events will be picked up in the INputKeyListener class
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false);
 	
+	}
+	
+	public void focusFrame(){
+		setFocusable(true);
+		setFocusTraversalKeysEnabled(false);
 	}
 	
 

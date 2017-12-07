@@ -122,7 +122,10 @@ public class CarController {
 		writeToCar(LOCATION);
 		System.out.println("Get Current location");
 		// read from socket
-		String location = carSock.read(); //blocking read call
+		
+		String location = "";
+		//COMENT OUT FOR TESTING WITHOUT CAR
+		 location = carSock.read(); //blocking read call
 		System.out.println("Current location is "+ location);
 		
 	}
