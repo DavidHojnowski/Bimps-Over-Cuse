@@ -6,9 +6,9 @@ import java.awt.event.KeyListener;
 public class Controller implements ControlInterface, ActionListener{
 	//We implement keylistner becuase the key listner is going to be the main driver of the controller
 
-	View view;
-	Model model;
-	CarController carControl;
+	private View view;
+	private Model model;
+	private CarController carControl;
 	
 	
 	//Strings for the action commands 
@@ -133,8 +133,6 @@ public class Controller implements ControlInterface, ActionListener{
 		else{
 			//do nothing
 		}
-		//this method is important as it tells the view to make the frame focusable so the it will detect key presses
-		view.setKeyFocus();
 		
 		
 	}

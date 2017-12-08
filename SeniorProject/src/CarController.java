@@ -13,8 +13,8 @@ public class CarController {
 	private final static String AUTOMATIC = "ATM";
 	private final static String RETURN = "RET";
 	
-	Model carModel;
-	CarSocket carSock;
+	private Model carModel;
+	private CarSocket carSock;
 	
 	public CarController(Model carModel){
 		this.carModel = carModel;
@@ -125,7 +125,7 @@ public class CarController {
 		
 		String location = "";
 		//COMENT OUT FOR TESTING WITHOUT CAR
-		 location = carSock.read(); //blocking read call
+		location = carSock.read(); //blocking read call
 		System.out.println("Current location is "+ location);
 		
 	}

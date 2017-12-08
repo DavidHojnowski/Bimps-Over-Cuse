@@ -1,7 +1,7 @@
 
 public class Model implements ModelInterface{
 
-	Car ourCar;
+	private Car ourCar;
 	
 	
 	public Model(){
@@ -118,7 +118,7 @@ public class Model implements ModelInterface{
 
 	@Override
 	public boolean goingBckWd() {
-		return ourCar.goingBckWd();
+		return ourCar.goingBckwd();
 	}
 
 

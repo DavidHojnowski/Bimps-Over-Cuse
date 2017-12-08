@@ -137,7 +137,7 @@ public class Car {
 		updateMoving();
 	}
 	
-	public boolean goingBckWd(){
+	public boolean goingBckwd(){
 		return bckwd;
 	}
 	

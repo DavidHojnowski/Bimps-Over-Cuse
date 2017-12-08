@@ -1,5 +1,4 @@
 
-
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -10,7 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 public class View implements ViewInterface{
-	private MyFrame test; //this is gunna be the frame or the window that we draw in
+	private JFrame test; //this is gunna be the frame or the window that we draw in
 	//Pannel to add components to
 	private JPanel myPanel;
 	//Buttons
@@ -33,7 +32,7 @@ public class View implements ViewInterface{
 	private final static String ESCRELS ="escape released";
 	
 	//controler to cal the control methods
-	Controller control;
+	private Controller control;
 	
 	
 
@@ -42,7 +41,7 @@ public class View implements ViewInterface{
 		control = c;
 		//This tells the frame the dimensions to close on exit and make it visible
 		//the location of this code may change but for right now we will call it from here 
-		test = new MyFrame(control);
+		test = new JFrame();
 		test.setSize(600,600);
 		test.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//first add a panel to add buttons to
@@ -155,11 +154,7 @@ public class View implements ViewInterface{
 		manButton.setEnabled(true);
 		autoButton.setEnabled(false);
 	}
-	
-	//TODO: REMOVE
-	public void setKeyFocus(){
-		test.focusFrame();
-	}
+
 	
 	AbstractAction upPressedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
