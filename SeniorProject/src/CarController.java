@@ -22,7 +22,8 @@ public class CarController {
 		//COMENT OUR FOR TESTING WITHOUT CAR
 		carSock.connect();
 	}
-	
+	//Pre:A key has been pressed need to update the model 
+	//Post: The model has been uodated based on the key that has been pressed
 	public void keyPressed(Keys key){
 		switch(key){
 			case UPARROW:
@@ -50,7 +51,8 @@ public class CarController {
 		}		
 
 	}
-	
+	//Pre:A key has been released need to update the model
+	//Post: The model has been updated based on the key relased
 	public void keyReleased(Keys key){
 		switch(key){
 			case UPARROW:
@@ -74,7 +76,8 @@ public class CarController {
 		}
 
 	}
-	
+	//Pre: Send one of the commands to move
+	//Post:One of the moving commands has been sent based on the sate of the car in the model
 	private void sendMoveCommand(){
 		/*System.out.println("Is moving "+ carModel.isMoving());
 		System.out.println("Going Forward " + carModel.goingFwd());
@@ -113,11 +116,15 @@ public class CarController {
 		}
 	}
 	
+	//Pre:need to send the do donuts command
+	//Post:The do donuts command has beeen sent
 	public void doDonuts(){
 		writeToCar(DODONUTS);
 		System.out.println("Do Donuts");
 	}
 	
+	//Pre:Need to send the location command
+	//Post: The location command has been sent
 	public void location(){
 		writeToCar(LOCATION);
 		System.out.println("Get Current location");
@@ -129,21 +136,30 @@ public class CarController {
 		System.out.println("Current location is "+ location);
 		
 	}
+	
+	//Pre:Need to send the manual command
+	//Post:The manual command has been sent
 	public void setManual(){
 		writeToCar(MANUAL);
 		System.out.println("Manual Mode");
 	}
+	
+	//Pre:need to send the Automatic command
+	//Post:the automatic command has been sent
 	public void setAutomatic(){
 		writeToCar(AUTOMATIC);
 		System.out.println("Automatic Mode");
 	}
 	
+	//Pre:Need to send the return comand
+	//Post:The return comand has beeen sent
 	public void returnBack(){
 		writeToCar(RETURN);
 		System.out.println("Return back to last location");
 	}
 	
-	
+	//Pre: Need to write some data s to the car
+	//Post: S has been sent to the car using the car socket
 	private void writeToCar(String s){	
 		//COMENT OUR FOR TESTING WITHOUT CAR
 		carSock.write(s);

@@ -38,14 +38,10 @@ public class Controller implements ControlInterface, ActionListener{
 
 	}
 	
-	//this method should be called to kick off the whole process
-	//Should include any set up or configuration code 
-	//I.E tell the view the first thing to draw or set up the sockets or intialize any data or files in the model
-	public void start(){
-		
-	}
+	//Methods to handel the different key presses---------------------
 	
-	//Methods to handel the different key presses
+	//Pre:The up arrow key has been pressed
+	//Post: The up key press event has been handled
 	public void upPressed(){
 		if(!upPressed){
 			carControl.keyPressed(Keys.UPARROW);
@@ -53,11 +49,15 @@ public class Controller implements ControlInterface, ActionListener{
 		}
 	}
 	
+	//Pre:The up key has been realsed
+	//Post:The up key relase event has been handled
 	public void upReleased(){
 		upPressed = false;
 		carControl.keyReleased(Keys.UPARROW);
 	}
 	
+	//Pre: The down arrow has been pressed
+	//Post: The down arrow key press has be handled
 	public void downPressed(){
 		if(!downPressed){
 			carControl.keyPressed(Keys.DOWNARROW);
@@ -65,11 +65,15 @@ public class Controller implements ControlInterface, ActionListener{
 		}
 	}
 	
+	//Pre:The down key has been released
+	//Post:The down key release event has been handled
 	public void downReleased(){
 		downPressed = false;
 		carControl.keyReleased(Keys.DOWNARROW);
 	}
 	
+	//Pre:The left key has been pressed
+	//Post: The left key event has been handeled
 	public void leftPressed(){
 		if(!leftPressed){
 			carControl.keyPressed(Keys.LEFTARROW);
@@ -77,12 +81,15 @@ public class Controller implements ControlInterface, ActionListener{
 		}
 	}
 	
+	//Pre:The left key has been released
+	//Post: The left key release event has been handled
 	public void leftReleased(){
 		leftPressed = false;
 		carControl.keyReleased(Keys.LEFTARROW);
 	}
 	
-	
+	//Pre:The right key has been pressed
+	//Post: The right key press event has been handled
 	public void rightPressed(){
 		if(!rightPressed){
 			carControl.keyPressed(Keys.RIGHTARROW);
@@ -90,12 +97,16 @@ public class Controller implements ControlInterface, ActionListener{
 		}
 	}
 	
+	//Pre: The right key has been relaeased
+	//Post: The right key release event has been handled
 	public void rightReleased(){
 		rightPressed = false;
 		carControl.keyReleased(Keys.RIGHTARROW);
 
 	}
 	
+	//Pre:The escape key has been pressed
+	//Post: The escape key press has beeen handled
 	public void escapePressed(){
 		if(!escapePressed){
 			carControl.keyPressed(Keys.ESCAPE);
@@ -103,13 +114,16 @@ public class Controller implements ControlInterface, ActionListener{
 		}
 	}
 	
+	//Pre: The escape key has been realesed
+	//Post: The escape key release event has been handled
 	public void escapeReleased(){
 		escapePressed = false;
 	}
 
 	
 	
-
+	//Pre:A button has been pressed
+	//Post: That button press has been handled 
 	//this method handles buttons being pressed on the screen
 	public void actionPerformed(ActionEvent arg0) {
 		if(arg0.getActionCommand().equals(DONUTBUTTON)){

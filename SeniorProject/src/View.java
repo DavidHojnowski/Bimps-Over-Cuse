@@ -1,6 +1,5 @@
 
 import java.awt.event.ActionEvent;
-
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -36,7 +35,8 @@ public class View implements ViewInterface{
 	
 	
 
-	
+	//Pre: Need to created an instance of the view
+	//Post: An instance has been created with all the comoponets for that view
 	public View(Controller c){
 		control = c;
 		//This tells the frame the dimensions to close on exit and make it visible
@@ -145,17 +145,22 @@ public class View implements ViewInterface{
 	
 	}
 	
+	//Pre:Need to dispaly were in manual mode
+	//Post: THe view has been updated to display were in manual mode
 	public void dispManualMode(){
 		manButton.setEnabled(false);
 		autoButton.setEnabled(true);
 	}
 	
+	//Pre:Need to display to the user that we are in automatic mode
+	//Post: The view has been updated to dispaly in automatic mode
 	public void dispAutoMode(){
 		manButton.setEnabled(true);
 		autoButton.setEnabled(false);
 	}
 
-	
+	//Pre: The up button has been pressed
+	//Post:controler has been updated on the button press
 	AbstractAction upPressedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.upPressed();
@@ -163,6 +168,8 @@ public class View implements ViewInterface{
 		}
 	};
 	
+	//Pre: The up button has been released
+	//Post:controler has been updated on button release
 	AbstractAction upReleasedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.upReleased();
@@ -170,6 +177,8 @@ public class View implements ViewInterface{
 		}
 	};
 	
+	//Pre: The down button has been pressed
+	//Post:controler has been updated on the button press
 	AbstractAction downPressedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.downPressed();
@@ -177,6 +186,8 @@ public class View implements ViewInterface{
 		}
 	};
 	
+	//Pre: The down button has beeen released
+	//Post:controler has been updated on button release
 	AbstractAction downReleasedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.downReleased();
@@ -184,30 +195,43 @@ public class View implements ViewInterface{
 		}
 	};
 	
+	//Pre: The left button has been pressed
+	//Post:controler has been updated on the button press
 	AbstractAction leftPressedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.leftPressed();
 
 		}
 	};
+	
+	//Pre: The left button has been released
+	//Post:controler has been updated on button release
 	AbstractAction leftReleasedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.leftReleased();
 
 		}
 	};
+	
+	//Pre:The right button has been presed
+	//Post:controler has been updated on the button press
 	AbstractAction rightPressedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.rightPressed();
 		}
 	};
 	
+	//Pre: The right button has been released
+	//Post:controler has been updated on button release
 	AbstractAction rightReleasedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.rightReleased();
 
 		}
 	};
+	
+	//Pre:The escape button has been pressed
+	//Post:controler has been updated on the button press
 	AbstractAction escapePressedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.escapePressed();
@@ -215,6 +239,8 @@ public class View implements ViewInterface{
 		}
 	};
 	
+	//Pre:  the escape button has been released
+	//Post: controler has been updated on button release
 	AbstractAction escapeReleasedAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			control.escapeReleased();

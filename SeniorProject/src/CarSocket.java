@@ -13,7 +13,8 @@ public class CarSocket {
 	private BufferedReader in;
 	private PrintWriter out;
 	
-	
+	//Pre:Need to connect to the pasive socket on the car
+	//Post: The passive socket has been connected to 
 	public void connect(){
 		try {
 			InetAddress  addrs = InetAddress.getByName(ADDRS);
@@ -32,10 +33,14 @@ public class CarSocket {
 		}
 	}
 	
+	//Pre:Need to write a string s to the socket
+	//Post: S has been written to the socket
 	public void write(String s){
 		out.println(s);
 	}
 	
+	//Pre: Need to read from the socket
+	//Post: Returns the the string read from the socket
 	public String read(){
 		String result = "";
 		try {
@@ -47,7 +52,8 @@ public class CarSocket {
 		return result;
 	}
 	
-	
+	//Pre: Must close the socket connedtion
+	//Post: The socket connection has been clsosed 
 	public void closeConnection(){
 		try {
 			in.close();
