@@ -4,57 +4,65 @@
 
 
 
-  //---------------Pin assignments and Global Variables---------------//
-  //---------------HC-SR04 Sonar---------------//
-  const int trigPin = 22;
-  const int echoPin = 24;
-  long duration;
-  int distance;
-  //------------Pins for 4 motors-----------------//
-  //4 pins two for each channel
-  //left motors
-  int in1 = 26;
-  int in2 = 28;
-  //right motors
-  int in3 = 27;
-  int in4 = 29;
-  //The PWM bits for the 2 chanesl
-  int ENA = 2;
-  int ENB = 3;
-  //---------------GPS---------------//
-  const int rxPin = 52; //may need to flip these 2 values
-  const int txPin = 53;
-  double initialCoordsLat = 00.00;  //initial Latitude of our rover
-  double initialCoordsLong = 00.00; //initial Longitude of our rover
-  double currentCoordsLat = 00.00;  //current Latitude of our rover
-  double currentCoordsLong = 00.00;  //current Longitude of our rover
-  double finalCoordsLat = 43.049272;  //destination latitude -- Grewen's Clock tower
-  double finalCoordsLong = -76.087518; //destination longitude -- Grewen's Clock tower
-  double angleTowardDest = 0.0;
-  double angleRoverIsFacing = 0.0;
-  boolean currentCoordsSet = false;
-  boolean initialCoordsSet = false;
-  #define GPSECHO false
-  #define GPSSerial Serial3
-  Adafruit_GPS GPS(&GPSSerial);
-  //---------------SERVO---------------//
-  Servo sonarServo;  //create servo objects to control servos; left
-  int pos = 0;    //variable to store the servo position
-  //---------------COMMUNICATION---------------//
-  String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
-  const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
-  const String crlf = "\r\n";
+//---------------Pin assignments and Global Variables---------------//
+//---------------HC-SR04 Sonar---------------//
+const int trigPin = 22;   //Physical PWM pin for sonar communication
+const int echoPin = 24;   //Physical PWM pin for sonar communication
+double duration;            //double that stores the time between pulses
+double distance;             //Distance returned by getSonar function
+//------------Pins for 4 motors-----------------//
+//4 pins two for each channel
+//left motors
+int in1 = 26;   //Physical pin for motors
+int in2 = 28;   //Physical pin for motors
+//right motors
+int in3 = 27;   //Physical pin for motors
+int in4 = 29;   //Physical pin for motors
+//The PWM bits for the 2 channels
+int ENA = 2;   //Physical pin for motors
+int ENB = 3;   //Physical pin for motors
+//---------------GPS---------------//
+const int rxPin = 52; //Physical pin for receiving data from GPS
+const int txPin = 53; //Physical pin for sending data to GPS
+double initialCoordsLat = 00.00;  //initial Latitude of our rover
+double initialCoordsLong = 00.00; //initial Longitude of our rover
+double currentCoordsLat = 00.00;  //current Latitude of our rover
+double currentCoordsLong = 00.00;  //current Longitude of our rover
+double finalCoordsLat = 43.049272;  //destination latitude -- Grewen's Clock tower
+double finalCoordsLong = -76.087518; //destination longitude -- Grewen's Clock tower
+double angleTowardDest = 0.0;       //angle that gives us the direction from initial point to final point
+double angleRoverIsFacing = 0.0;    //angle we're facing
+boolean currentCoordsSet = false;   //have we set currentCoords?
+boolean initialCoordsSet = false;   //have we set initialCoords?
+#define GPSECHO false               //needed for GPS code
+#define GPSSerial Serial3           //initialize GPS to Serial bus #3
+Adafruit_GPS GPS(&GPSSerial);
+//---------------SERVO---------------//
+Servo sonarServo;  //create servo objects to control servos; left
+int pos = 0;    //variable to store the servo position
+//---------------COMMUNICATION---------------//
+String lastMessageReceived = "";          //Saves the most recently used message that we received from the ESP
+const String cipSend = "AT+CIPSEND=0,";   //Used for sending raw plaintext messages serially across ESP
 
-  //---------------MISC Globals---------------//
-  #define pi   3.14159265358979323846264338327950288
-  boolean automatic = false;
-  boolean pause = false;
-  uint32_t timer = millis();
-  int checkDirection = 0;
-  boolean facingCorrectDirection = false;
-  //---------------End Pin assignments and Global Variables---------------//
-  
+//---------------MISC Globals---------------//
+#define pi   3.14159265358979323846264338327950288    //Pi for math problems
+boolean automatic = false;                            //Automation boolean -- changes on ATM/MAN command
+boolean pause = false;                                //pausing boolean -- changes based on PSE command
+uint32_t timer = millis();                            //timer for GPS querying
+int checkDirection = 0;                               //counter for checking where we are vs. where we want to be
+boolean facingCorrectDirection = false;               //name explains it
+//---------------End Pin assignments and Global Variables---------------//
 
+
+
+
+
+
+
+
+
+
+//---------------Required setup() function---------------//
 //Pre-Conditions: Initialize or call initializations for each component
 //Post-Conditions: All components have been initialized
 void setup() {
@@ -66,34 +74,38 @@ void setup() {
   //---------------HC-SR04---------------//
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
-  double duration;
-  double distance;
   //---------------Motors---------------//
-  pinMode(in1,OUTPUT);
-  pinMode(in2,OUTPUT);
-  pinMode(in3,OUTPUT);
-  pinMode(in4,OUTPUT);
-  pinMode(ENA,OUTPUT);
-  pinMode(ENB,OUTPUT);
+  pinMode(in1,OUTPUT);  //Pin init for motor controls
+  pinMode(in2,OUTPUT);  //Pin init for motor controls
+  pinMode(in3,OUTPUT);  //Pin init for motor controls
+  pinMode(in4,OUTPUT);  //Pin init for motor controls
+  pinMode(ENA,OUTPUT);  //Pin init for motor controls
+  pinMode(ENB,OUTPUT);  //Pin init for motor controls
   //the PWM's can have a range of 0-255
-  analogWrite(ENA, 255);
-  analogWrite(ENB, 255);
+  analogWrite(ENA, 255);  //Pin init for motor controls
+  analogWrite(ENB, 255);  //Pin init for motor controls
   
   //---------------GPS---------------//
   GPS.begin(9600); //intialize serial at a baud rate of 9600
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);      //Initialization command for GPS module
    // Set the update rate
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); 
-  setInitialCoordinates();
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);      //Initialization command for GPS module
+  setInitialCoordinates();                        //Queries GPS to get initial coords
   //---------------ESP---------------//
-  initESP();
+  initESP();              //
   delay(400);
   Serial.println("\nParsing incoming data:\n");
   //----------------Servo------------//
   sonarServo.attach(4);  //attaches the servo on pin 4 to the servo object
-  moveServo(90);  
+  moveServo(90);          //moves Servo to forward point
 }
+//---------------End required setup() function---------------//
 
+
+
+
+
+//---------------Main/required loop() function---------------//
 
 //Pre-Conditions: Main routine; Constantly writes two motor pins to max number. Moves in straight lines to from current position to final position.
 //Post-Conditions: Arrived at final position.
@@ -124,6 +136,15 @@ void loop() {
     }
   }
 }
+//---------------End Main and Required loop() function---------------//
+
+
+
+
+
+
+
+
 
 
 //---------------Mathematics Functions---------------//
@@ -150,18 +171,26 @@ double convertToDecDegFromDecMin(double decMinsCoord){
 //---------------End Mathematics Functions---------------//
 
 
+
+
+
+
+
+
+
+
 //---------------Communication Functions---------------//
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Receives message from the ESP module through the Serial2 bus
+//Post-Conditions: Message returned
 String receiveMessage(){
   lastMessageReceived = "";           //resets the global variable to be an empty string
   lastMessageReceived = Serial2.readStringUntil('\n');
   return lastMessageReceived;
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: We have a message ready and need to send it across the socket using AT commands and a CRLF at the end
+//Post-Conditions: Message sent across socket to Java code
 void sendMessage(String message){
   String customCIPSend;
   customCIPSend = cipSend + message.length();   //cipSend is "AT+CIPSEND=0," So we need to add message length
@@ -173,8 +202,8 @@ void sendMessage(String message){
   delay(100);
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: A string has been received and we need to trim the header data from it to parse
+//Post-Conditions: String has been trimmed and can now be parsed
 String trimString(String toTrim){  //Trims the header data off of the received messages
   int posInString = 0;  //Since we know the message will have "+IPD=x,y:"
   int colonPos;
@@ -196,8 +225,8 @@ String trimString(String toTrim){  //Trims the header data off of the received m
 }
 
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Does a little bit of string manipulation but then handles what we've received in the form of our protocol
+//Post-Conditions: Protocol command has been handles appropriately
 String parseReceiveString(String messageReceived){
   String receivedCommand;
  // Serial.println(messageReceived);
@@ -206,8 +235,8 @@ String parseReceiveString(String messageReceived){
     
     receivedCommand = messageReceived[0];
     receivedCommand += messageReceived[1];
-    receivedCommand += messageReceived[2];
-    //Serial.print(receivedCommand);
+    receivedCommand += messageReceived[2]; //Makes sure we only have 3 letter commands
+
     if(!pause){
       if(receivedCommand.equals("LFT") && !automatic){     //Case 1: Left
               roverTurnLeft();
@@ -230,20 +259,24 @@ String parseReceiveString(String messageReceived){
       }else if(receivedCommand.equals("ATM")){     //Case 10: Enables automatic control
         automatic = true;
       }else if(receivedCommand.equals("RET")){     //Case 11: Return to starting position
-         
+        int tempLat, tempLong;
+        tempLat = initialCoordsLat;
+        tempLong = initialCoordsLong;
+        initialCoordsLong = finalCoordsLong;
+        initialCoordsLat = finalCoordsLat;
+        finalCoordsLat = tempLat;
+        finalCoordsLong = tempLong;
       }else if(receivedCommand.equals("RSV")){     //Case 12: Empty Case; Reserved
-        
       }
     }else if(receivedCommand.equals("PSE")){     //Unpause the rover's movement
             pause = !pause;
     }
   }
-
   return receivedCommand;
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: We need to format the location data a bit before sending to the java code
+//Post-Conditions: Formatted coordinates and sent to Java code
 void sendLocation(){
   char tempLat[8];
   char tempLong[8];
@@ -260,18 +293,25 @@ void sendLocation(){
 
 
 
+
+
+
+
+
+
+
 //---------------Component Control Functions---------------//
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Moves servo motor to input angle
+//Post-Conditions: servo is now in position param(angle)
 void moveServo(int angle){
   pos = angle;
   sonarServo.write(pos);              //tell servo to go to position in variable 'pos'
   delay(15);                         //waits 15ms for the servo to reach the position
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Continuously Queries the GPS during initialization so we know where we started
+//Post-Conditions: Initial coords are set and we continue with initialization
 void setInitialCoordinates(){
   while(!initialCoordsSet){
     getGPSData(0);
@@ -282,8 +322,8 @@ void setInitialCoordinates(){
 //typeOfCoords = 0 for initial coords
 //typeOfCoords = 1 for current coords
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Need to read from the GPS and output to the Serial Monitor(console) so we know what is happening. Also sets curr/initial coords.
+//Post-Conditions:  Initial/curr coords are set and data is output to Serial Monitor
 void getGPSData(int typeOfCoords){
   // read data from the GPS in the 'main loop'
   char c = GPS.read();
@@ -345,8 +385,8 @@ void getGPSData(int typeOfCoords){
       }
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Need to get distance from the sonar sensor and convert it into centimeters
+//Post-Conditions: Retrieval of distance and conversion accomplished and returned.
 double getSonar(){
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
@@ -369,8 +409,8 @@ double getSonar(){
   return distance;
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Need to send AT commands that initialize our ESP module correctly 
+//Post-Conditions: ESP module is now correctly configured and we can now connect to it appropriately
 void initESP() {
   Serial.println("\nESP initialization beginning...");
   delay(50);
@@ -412,10 +452,18 @@ void initESP() {
 //---------------End Component Control Functions---------------//
 
 
+
+
+
+
+
+
+
+
 //---------------Rover Movement Functions---------------//
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Attempt to face in the direction of double value angleTowardDestination
+//Post-Conditions: Facing in the correct direction and we are now able to drive straight
 void roverFaceTowardDestination(){
   currentCoordsLat = 0.0;
   currentCoordsLong = 0.0;
@@ -454,8 +502,8 @@ void roverFaceTowardDestination(){
   }
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Moves rover forward
+//Post-Conditions: Rover has moved as long as the associated key has been held down
 void roverMoveForward(){
   digitalWrite(in1,LOW);
   digitalWrite(in2,HIGH);
@@ -463,8 +511,8 @@ void roverMoveForward(){
   digitalWrite(in4,HIGH);
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Moves rover backward
+//Post-Conditions: Rover has moved as long as the associated key has been held down
 void roverMoveBackward(){
   digitalWrite(in1,HIGH);
   digitalWrite(in2,LOW);
@@ -472,8 +520,8 @@ void roverMoveBackward(){
   digitalWrite(in4,LOW);
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Turns rover left
+//Post-Conditions: Rover has moved as long as the associated key has been held down
 void roverTurnLeft(){
   digitalWrite(in1,LOW);
   digitalWrite(in2,HIGH);
@@ -481,8 +529,8 @@ void roverTurnLeft(){
   digitalWrite(in4,LOW);
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Turns rover right
+//Post-Conditions: Rover has moved as long as the associated key has been held down
 void roverTurnRight(){
   digitalWrite(in1,HIGH);
   digitalWrite(in2,LOW);
@@ -490,8 +538,8 @@ void roverTurnRight(){
   digitalWrite(in4,HIGH);
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Moves applies brakes and stops motion
+//Post-Conditions: Rover stopped
 void roverStop(){
   digitalWrite(in1,LOW);
   digitalWrite(in2,LOW);
@@ -499,8 +547,8 @@ void roverStop(){
   digitalWrite(in4,LOW);
 }
 
-//Pre-Conditions:
-//Post-Conditions:
+//Pre-Conditions: Does donuts (for fun purposes only)
+//Post-Conditions: Does donuts (for fun purposes only)
 void roverDoDonuts(){
   int count = 500;
   digitalWrite(in1,HIGH);
